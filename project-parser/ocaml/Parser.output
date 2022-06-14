@@ -1,0 +1,4191 @@
+   0  $accept : %entry% $end
+
+   1  program : protodecs classdecs stm T_Eof
+
+   2  protodec : T_Protocol id typevars extends T_LCur_Bracket funprotos T_RCur_Bracket
+
+   3  typevars :
+   4           | T_Le tvars T_Ge
+
+   5  extends :
+   6          | T_Extends typeapps
+
+   7  typeapp : id
+   8          | id T_Le types T_Ge
+   9          | tvar
+
+  10  funproto : T_Fun id typevars T_LParen formals T_RParen T_Semicolon
+  11           | T_Fun id typevars T_LParen formals T_RParen T_Colon rtype T_Semicolon
+
+  12  classdec : T_Class id typevars T_Implements typeapps classbody
+
+  13  classbody : T_LCur_Bracket init bodydecs T_RCur_Bracket
+
+  14  init : T_LParen formals T_RParen block
+
+  15  bodydec : constdec
+  16          | globaldec
+  17          | fielddec
+  18          | fundec
+
+  19  constdec : T_Constant primtype id T_Set literal T_Semicolon
+
+  20  globaldec : T_Static primtype id T_Set literal T_Semicolon
+
+  21  fielddec : formal T_Semicolon
+
+  22  formal : ttype id
+
+  23  fundec : T_Fun id typevars T_LParen formals T_RParen block
+  24         | T_Fun id typevars T_LParen formals T_RParen T_Colon rtype block
+
+  25  block : T_LCur_Bracket localdecs stms T_RCur_Bracket
+
+  26  localdec : vardec
+  27           | fundec
+
+  28  vardec : ttype id T_Set exp T_Semicolon
+
+  29  ttype : primtype
+  30        | typeapp
+  31        | ttype T_LSq_Bracket T_RSq_Bracket
+  32        | T_Function T_LParen T_LParen types T_RParen T_Arrow rtype T_RParen
+
+  33  primtype : T_Bool
+  34           | T_PTChar
+  35           | T_PTString
+  36           | T_Int
+  37           | T_Float
+
+  38  rtype : ttype
+  39        | T_Void
+
+  40  stm : T_Semicolon
+  41      | exp T_Semicolon
+  42      | T_If T_LParen exp T_RParen stm T_Else stm
+  43      | T_While T_LParen exp T_RParen stm
+  44      | T_For T_LParen vardec exp T_Semicolon exp T_RParen stm
+  45      | T_Return T_Semicolon
+  46      | T_Return exp T_Semicolon
+  47      | block
+  48      | T_Halt T_LParen exp T_RParen T_Semicolon
+  49      | print_funcs
+
+  50  exp : lhs
+  51      | lhs assignop exp
+
+  52  lhs : disjunct
+  53      | disjunct orop lhs
+
+  54  disjunct : conjunct
+  55           | conjunct andop disjunct
+
+  56  conjunct : simple
+  57           | simple relop simple
+
+  58  simple : term
+  59         | simple addop term
+
+  60  term : factor
+  61       | term mulop factor
+
+  62  factor : unop factor
+  63         | literal factor_rest
+  64         | T_New id T_LParen actuals T_RParen factor_rest
+  65         | T_New id T_Le types T_Ge T_LParen actuals T_RParen factor_rest
+  66         | T_New ttype T_LSq_Bracket exp T_RSq_Bracket factor_rest
+  67         | T_Lambda T_LParen formals T_RParen block factor_rest
+  68         | T_Lambda T_LParen formals T_RParen T_Colon rtype block factor_rest
+  69         | T_LParen exp T_RParen factor_rest
+  70         | id factor_rest
+
+  71  factor_rest :
+  72              | T_LParen actuals T_RParen factor_rest
+  73              | T_Dot id factor_rest
+  74              | T_LSq_Bracket exp T_RSq_Bracket factor_rest
+
+  75  literal : T_Null
+  76          | T_True
+  77          | T_False
+  78          | charliteral
+  79          | stringliteral
+  80          | intliteral
+  81          | floatliteral
+
+  82  charliteral : T_Char
+
+  83  stringliteral : T_String
+
+  84  intliteral : T_Const
+
+  85  floatliteral : T_Float_Const
+
+  86  tvars : tvar
+  87        | tvar T_Comma tvars
+
+  88  protodecs :
+  89            | protodec protodecs
+
+  90  typeapps :
+  91           | typeapp typeapps_rest
+
+  92  typeapps_rest :
+  93                | T_Comma typeapp typeapps_rest
+
+  94  funprotos :
+  95            | funproto funprotos
+
+  96  classdecs :
+  97            | classdec classdecs
+
+  98  types :
+  99        | ttype types_rest
+
+ 100  types_rest :
+ 101             | T_Comma ttype types_rest
+
+ 102  bodydecs :
+ 103           | bodydec bodydecs
+
+ 104  localdecs :
+ 105            | localdec localdecs
+
+ 106  stms :
+ 107       | stm stms
+
+ 108  formals :
+ 109          | formal formals_rest
+
+ 110  formals_rest :
+ 111               | T_Comma formal formals_rest
+
+ 112  actuals :
+ 113          | exp actuals_rest
+
+ 114  actuals_rest :
+ 115               | T_Comma exp actuals_rest
+
+ 116  assignop : T_Set
+
+ 117  orop : T_Or
+
+ 118  andop : T_And
+
+ 119  relop : T_Eq
+ 120        | T_Neq
+ 121        | T_Le
+ 122        | T_Leq
+ 123        | T_Ge
+ 124        | T_Geq
+
+ 125  addop : T_Add
+ 126        | T_Sub
+
+ 127  mulop : T_Mult
+ 128        | T_Div
+
+ 129  unop : T_Not
+ 130       | T_Sub
+
+ 131  id : T_Id
+
+ 132  tvar : T_Var
+
+ 133  print_funcs : T_Printline T_LParen T_RParen T_Semicolon
+ 134              | T_Printint T_LParen exp T_RParen T_Semicolon
+ 135              | T_Printstring T_LParen exp T_RParen T_Semicolon
+ 136              | T_Printbool T_LParen exp T_RParen T_Semicolon
+ 137              | T_Printfloat T_LParen exp T_RParen T_Semicolon
+ 138              | T_Printchar T_LParen exp T_RParen T_Semicolon
+
+ 139  %entry% : '\001' program
+
+state 0
+	$accept : . %entry% $end  (0)
+
+	'\001'  shift 1
+	.  error
+
+	%entry%  goto 2
+
+
+state 1
+	%entry% : '\001' . program  (139)
+	protodecs : .  (88)
+
+	T_Protocol  shift 3
+	T_Char  reduce 88
+	T_String  reduce 88
+	T_Const  reduce 88
+	T_Float_Const  reduce 88
+	T_Id  reduce 88
+	T_Class  reduce 88
+	T_If  reduce 88
+	T_While  reduce 88
+	T_For  reduce 88
+	T_Return  reduce 88
+	T_Halt  reduce 88
+	T_New  reduce 88
+	T_Lambda  reduce 88
+	T_Null  reduce 88
+	T_True  reduce 88
+	T_False  reduce 88
+	T_Printline  reduce 88
+	T_Printbool  reduce 88
+	T_Printchar  reduce 88
+	T_Printstring  reduce 88
+	T_Printint  reduce 88
+	T_Printfloat  reduce 88
+	T_Sub  reduce 88
+	T_Not  reduce 88
+	T_Semicolon  reduce 88
+	T_LParen  reduce 88
+	T_LCur_Bracket  reduce 88
+
+	program  goto 4
+	protodecs  goto 5
+	protodec  goto 6
+
+
+state 2
+	$accept : %entry% . $end  (0)
+
+	$end  accept
+
+
+state 3
+	protodec : T_Protocol . id typevars extends T_LCur_Bracket funprotos T_RCur_Bracket  (2)
+
+	T_Id  shift 7
+	.  error
+
+	id  goto 8
+
+
+state 4
+	%entry% : '\001' program .  (139)
+
+	.  reduce 139
+
+
+state 5
+	program : protodecs . classdecs stm T_Eof  (1)
+	classdecs : .  (96)
+
+	T_Class  shift 9
+	T_Char  reduce 96
+	T_String  reduce 96
+	T_Const  reduce 96
+	T_Float_Const  reduce 96
+	T_Id  reduce 96
+	T_If  reduce 96
+	T_While  reduce 96
+	T_For  reduce 96
+	T_Return  reduce 96
+	T_Halt  reduce 96
+	T_New  reduce 96
+	T_Lambda  reduce 96
+	T_Null  reduce 96
+	T_True  reduce 96
+	T_False  reduce 96
+	T_Printline  reduce 96
+	T_Printbool  reduce 96
+	T_Printchar  reduce 96
+	T_Printstring  reduce 96
+	T_Printint  reduce 96
+	T_Printfloat  reduce 96
+	T_Sub  reduce 96
+	T_Not  reduce 96
+	T_Semicolon  reduce 96
+	T_LParen  reduce 96
+	T_LCur_Bracket  reduce 96
+
+	classdecs  goto 10
+	classdec  goto 11
+
+
+state 6
+	protodecs : protodec . protodecs  (89)
+	protodecs : .  (88)
+
+	T_Protocol  shift 3
+	T_Char  reduce 88
+	T_String  reduce 88
+	T_Const  reduce 88
+	T_Float_Const  reduce 88
+	T_Id  reduce 88
+	T_Class  reduce 88
+	T_If  reduce 88
+	T_While  reduce 88
+	T_For  reduce 88
+	T_Return  reduce 88
+	T_Halt  reduce 88
+	T_New  reduce 88
+	T_Lambda  reduce 88
+	T_Null  reduce 88
+	T_True  reduce 88
+	T_False  reduce 88
+	T_Printline  reduce 88
+	T_Printbool  reduce 88
+	T_Printchar  reduce 88
+	T_Printstring  reduce 88
+	T_Printint  reduce 88
+	T_Printfloat  reduce 88
+	T_Sub  reduce 88
+	T_Not  reduce 88
+	T_Semicolon  reduce 88
+	T_LParen  reduce 88
+	T_LCur_Bracket  reduce 88
+
+	protodecs  goto 12
+	protodec  goto 6
+
+
+state 7
+	id : T_Id .  (131)
+
+	.  reduce 131
+
+
+state 8
+	protodec : T_Protocol id . typevars extends T_LCur_Bracket funprotos T_RCur_Bracket  (2)
+	typevars : .  (3)
+
+	T_Le  shift 13
+	T_Extends  reduce 3
+	T_LCur_Bracket  reduce 3
+
+	typevars  goto 14
+
+
+state 9
+	classdec : T_Class . id typevars T_Implements typeapps classbody  (12)
+
+	T_Id  shift 7
+	.  error
+
+	id  goto 15
+
+
+state 10
+	program : protodecs classdecs . stm T_Eof  (1)
+
+	T_Char  shift 16
+	T_String  shift 17
+	T_Const  shift 18
+	T_Float_Const  shift 19
+	T_Id  shift 7
+	T_If  shift 20
+	T_While  shift 21
+	T_For  shift 22
+	T_Return  shift 23
+	T_Halt  shift 24
+	T_New  shift 25
+	T_Lambda  shift 26
+	T_Null  shift 27
+	T_True  shift 28
+	T_False  shift 29
+	T_Printline  shift 30
+	T_Printbool  shift 31
+	T_Printchar  shift 32
+	T_Printstring  shift 33
+	T_Printint  shift 34
+	T_Printfloat  shift 35
+	T_Sub  shift 36
+	T_Not  shift 37
+	T_Semicolon  shift 38
+	T_LParen  shift 39
+	T_LCur_Bracket  shift 40
+	.  error
+
+	stm  goto 41
+	id  goto 42
+	block  goto 43
+	literal  goto 44
+	exp  goto 45
+	print_funcs  goto 46
+	lhs  goto 47
+	disjunct  goto 48
+	conjunct  goto 49
+	simple  goto 50
+	term  goto 51
+	factor  goto 52
+	unop  goto 53
+	charliteral  goto 54
+	stringliteral  goto 55
+	intliteral  goto 56
+	floatliteral  goto 57
+
+
+state 11
+	classdecs : classdec . classdecs  (97)
+	classdecs : .  (96)
+
+	T_Class  shift 9
+	T_Char  reduce 96
+	T_String  reduce 96
+	T_Const  reduce 96
+	T_Float_Const  reduce 96
+	T_Id  reduce 96
+	T_If  reduce 96
+	T_While  reduce 96
+	T_For  reduce 96
+	T_Return  reduce 96
+	T_Halt  reduce 96
+	T_New  reduce 96
+	T_Lambda  reduce 96
+	T_Null  reduce 96
+	T_True  reduce 96
+	T_False  reduce 96
+	T_Printline  reduce 96
+	T_Printbool  reduce 96
+	T_Printchar  reduce 96
+	T_Printstring  reduce 96
+	T_Printint  reduce 96
+	T_Printfloat  reduce 96
+	T_Sub  reduce 96
+	T_Not  reduce 96
+	T_Semicolon  reduce 96
+	T_LParen  reduce 96
+	T_LCur_Bracket  reduce 96
+
+	classdecs  goto 58
+	classdec  goto 11
+
+
+state 12
+	protodecs : protodec protodecs .  (89)
+
+	.  reduce 89
+
+
+state 13
+	typevars : T_Le . tvars T_Ge  (4)
+
+	T_Var  shift 59
+	.  error
+
+	tvars  goto 60
+	tvar  goto 61
+
+
+state 14
+	protodec : T_Protocol id typevars . extends T_LCur_Bracket funprotos T_RCur_Bracket  (2)
+	extends : .  (5)
+
+	T_Extends  shift 62
+	T_LCur_Bracket  reduce 5
+
+	extends  goto 63
+
+
+state 15
+	classdec : T_Class id . typevars T_Implements typeapps classbody  (12)
+	typevars : .  (3)
+
+	T_Le  shift 13
+	T_Implements  reduce 3
+
+	typevars  goto 64
+
+
+state 16
+	charliteral : T_Char .  (82)
+
+	.  reduce 82
+
+
+state 17
+	stringliteral : T_String .  (83)
+
+	.  reduce 83
+
+
+state 18
+	intliteral : T_Const .  (84)
+
+	.  reduce 84
+
+
+state 19
+	floatliteral : T_Float_Const .  (85)
+
+	.  reduce 85
+
+
+state 20
+	stm : T_If . T_LParen exp T_RParen stm T_Else stm  (42)
+
+	T_LParen  shift 65
+	.  error
+
+
+state 21
+	stm : T_While . T_LParen exp T_RParen stm  (43)
+
+	T_LParen  shift 66
+	.  error
+
+
+state 22
+	stm : T_For . T_LParen vardec exp T_Semicolon exp T_RParen stm  (44)
+
+	T_LParen  shift 67
+	.  error
+
+
+state 23
+	stm : T_Return . T_Semicolon  (45)
+	stm : T_Return . exp T_Semicolon  (46)
+
+	T_Char  shift 16
+	T_String  shift 17
+	T_Const  shift 18
+	T_Float_Const  shift 19
+	T_Id  shift 7
+	T_New  shift 25
+	T_Lambda  shift 26
+	T_Null  shift 27
+	T_True  shift 28
+	T_False  shift 29
+	T_Sub  shift 36
+	T_Not  shift 37
+	T_Semicolon  shift 68
+	T_LParen  shift 39
+	.  error
+
+	id  goto 42
+	literal  goto 44
+	exp  goto 69
+	lhs  goto 47
+	disjunct  goto 48
+	conjunct  goto 49
+	simple  goto 50
+	term  goto 51
+	factor  goto 52
+	unop  goto 53
+	charliteral  goto 54
+	stringliteral  goto 55
+	intliteral  goto 56
+	floatliteral  goto 57
+
+
+state 24
+	stm : T_Halt . T_LParen exp T_RParen T_Semicolon  (48)
+
+	T_LParen  shift 70
+	.  error
+
+
+state 25
+	factor : T_New . id T_LParen actuals T_RParen factor_rest  (64)
+	factor : T_New . id T_Le types T_Ge T_LParen actuals T_RParen factor_rest  (65)
+	factor : T_New . ttype T_LSq_Bracket exp T_RSq_Bracket factor_rest  (66)
+
+	T_Id  shift 7
+	T_Var  shift 59
+	T_Function  shift 71
+	T_Bool  shift 72
+	T_PTChar  shift 73
+	T_PTString  shift 74
+	T_Int  shift 75
+	T_Float  shift 76
+	.  error
+
+	id  goto 77
+	typeapp  goto 78
+	tvar  goto 79
+	primtype  goto 80
+	ttype  goto 81
+
+
+state 26
+	factor : T_Lambda . T_LParen formals T_RParen block factor_rest  (67)
+	factor : T_Lambda . T_LParen formals T_RParen T_Colon rtype block factor_rest  (68)
+
+	T_LParen  shift 82
+	.  error
+
+
+state 27
+	literal : T_Null .  (75)
+
+	.  reduce 75
+
+
+state 28
+	literal : T_True .  (76)
+
+	.  reduce 76
+
+
+state 29
+	literal : T_False .  (77)
+
+	.  reduce 77
+
+
+state 30
+	print_funcs : T_Printline . T_LParen T_RParen T_Semicolon  (133)
+
+	T_LParen  shift 83
+	.  error
+
+
+state 31
+	print_funcs : T_Printbool . T_LParen exp T_RParen T_Semicolon  (136)
+
+	T_LParen  shift 84
+	.  error
+
+
+state 32
+	print_funcs : T_Printchar . T_LParen exp T_RParen T_Semicolon  (138)
+
+	T_LParen  shift 85
+	.  error
+
+
+state 33
+	print_funcs : T_Printstring . T_LParen exp T_RParen T_Semicolon  (135)
+
+	T_LParen  shift 86
+	.  error
+
+
+state 34
+	print_funcs : T_Printint . T_LParen exp T_RParen T_Semicolon  (134)
+
+	T_LParen  shift 87
+	.  error
+
+
+state 35
+	print_funcs : T_Printfloat . T_LParen exp T_RParen T_Semicolon  (137)
+
+	T_LParen  shift 88
+	.  error
+
+
+state 36
+	unop : T_Sub .  (130)
+
+	.  reduce 130
+
+
+state 37
+	unop : T_Not .  (129)
+
+	.  reduce 129
+
+
+state 38
+	stm : T_Semicolon .  (40)
+
+	.  reduce 40
+
+
+state 39
+	factor : T_LParen . exp T_RParen factor_rest  (69)
+
+	T_Char  shift 16
+	T_String  shift 17
+	T_Const  shift 18
+	T_Float_Const  shift 19
+	T_Id  shift 7
+	T_New  shift 25
+	T_Lambda  shift 26
+	T_Null  shift 27
+	T_True  shift 28
+	T_False  shift 29
+	T_Sub  shift 36
+	T_Not  shift 37
+	T_LParen  shift 39
+	.  error
+
+	id  goto 42
+	literal  goto 44
+	exp  goto 89
+	lhs  goto 47
+	disjunct  goto 48
+	conjunct  goto 49
+	simple  goto 50
+	term  goto 51
+	factor  goto 52
+	unop  goto 53
+	charliteral  goto 54
+	stringliteral  goto 55
+	intliteral  goto 56
+	floatliteral  goto 57
+
+
+40: shift/reduce conflict (shift 7, reduce 104) on T_Id
+state 40
+	block : T_LCur_Bracket . localdecs stms T_RCur_Bracket  (25)
+	localdecs : .  (104)
+
+	T_Id  shift 7
+	T_Var  shift 59
+	T_Fun  shift 90
+	T_Function  shift 71
+	T_Bool  shift 72
+	T_PTChar  shift 73
+	T_PTString  shift 74
+	T_Int  shift 75
+	T_Float  shift 76
+	T_Char  reduce 104
+	T_String  reduce 104
+	T_Const  reduce 104
+	T_Float_Const  reduce 104
+	T_If  reduce 104
+	T_While  reduce 104
+	T_For  reduce 104
+	T_Return  reduce 104
+	T_Halt  reduce 104
+	T_New  reduce 104
+	T_Lambda  reduce 104
+	T_Null  reduce 104
+	T_True  reduce 104
+	T_False  reduce 104
+	T_Printline  reduce 104
+	T_Printbool  reduce 104
+	T_Printchar  reduce 104
+	T_Printstring  reduce 104
+	T_Printint  reduce 104
+	T_Printfloat  reduce 104
+	T_Sub  reduce 104
+	T_Not  reduce 104
+	T_Semicolon  reduce 104
+	T_LParen  reduce 104
+	T_LCur_Bracket  reduce 104
+	T_RCur_Bracket  reduce 104
+
+	id  goto 91
+	typeapp  goto 78
+	tvar  goto 79
+	fundec  goto 92
+	primtype  goto 80
+	ttype  goto 93
+	localdecs  goto 94
+	localdec  goto 95
+	vardec  goto 96
+
+
+state 41
+	program : protodecs classdecs stm . T_Eof  (1)
+
+	T_Eof  shift 97
+	.  error
+
+
+state 42
+	factor : id . factor_rest  (70)
+	factor_rest : .  (71)
+
+	T_LParen  shift 98
+	T_LSq_Bracket  shift 99
+	T_Dot  shift 100
+	T_Set  reduce 71
+	T_Or  reduce 71
+	T_And  reduce 71
+	T_Eq  reduce 71
+	T_Neq  reduce 71
+	T_Le  reduce 71
+	T_Leq  reduce 71
+	T_Ge  reduce 71
+	T_Geq  reduce 71
+	T_Add  reduce 71
+	T_Sub  reduce 71
+	T_Mult  reduce 71
+	T_Div  reduce 71
+	T_Semicolon  reduce 71
+	T_Comma  reduce 71
+	T_RParen  reduce 71
+	T_RSq_Bracket  reduce 71
+
+	factor_rest  goto 101
+
+
+state 43
+	stm : block .  (47)
+
+	.  reduce 47
+
+
+state 44
+	factor : literal . factor_rest  (63)
+	factor_rest : .  (71)
+
+	T_LParen  shift 98
+	T_LSq_Bracket  shift 99
+	T_Dot  shift 100
+	T_Set  reduce 71
+	T_Or  reduce 71
+	T_And  reduce 71
+	T_Eq  reduce 71
+	T_Neq  reduce 71
+	T_Le  reduce 71
+	T_Leq  reduce 71
+	T_Ge  reduce 71
+	T_Geq  reduce 71
+	T_Add  reduce 71
+	T_Sub  reduce 71
+	T_Mult  reduce 71
+	T_Div  reduce 71
+	T_Semicolon  reduce 71
+	T_Comma  reduce 71
+	T_RParen  reduce 71
+	T_RSq_Bracket  reduce 71
+
+	factor_rest  goto 102
+
+
+state 45
+	stm : exp . T_Semicolon  (41)
+
+	T_Semicolon  shift 103
+	.  error
+
+
+state 46
+	stm : print_funcs .  (49)
+
+	.  reduce 49
+
+
+state 47
+	exp : lhs .  (50)
+	exp : lhs . assignop exp  (51)
+
+	T_Set  shift 104
+	T_Semicolon  reduce 50
+	T_Comma  reduce 50
+	T_RParen  reduce 50
+	T_RSq_Bracket  reduce 50
+
+	assignop  goto 105
+
+
+state 48
+	lhs : disjunct .  (52)
+	lhs : disjunct . orop lhs  (53)
+
+	T_Or  shift 106
+	T_Set  reduce 52
+	T_Semicolon  reduce 52
+	T_Comma  reduce 52
+	T_RParen  reduce 52
+	T_RSq_Bracket  reduce 52
+
+	orop  goto 107
+
+
+state 49
+	disjunct : conjunct .  (54)
+	disjunct : conjunct . andop disjunct  (55)
+
+	T_And  shift 108
+	T_Set  reduce 54
+	T_Or  reduce 54
+	T_Semicolon  reduce 54
+	T_Comma  reduce 54
+	T_RParen  reduce 54
+	T_RSq_Bracket  reduce 54
+
+	andop  goto 109
+
+
+state 50
+	conjunct : simple .  (56)
+	conjunct : simple . relop simple  (57)
+	simple : simple . addop term  (59)
+
+	T_Eq  shift 110
+	T_Neq  shift 111
+	T_Le  shift 112
+	T_Leq  shift 113
+	T_Ge  shift 114
+	T_Geq  shift 115
+	T_Add  shift 116
+	T_Sub  shift 117
+	T_Set  reduce 56
+	T_Or  reduce 56
+	T_And  reduce 56
+	T_Semicolon  reduce 56
+	T_Comma  reduce 56
+	T_RParen  reduce 56
+	T_RSq_Bracket  reduce 56
+
+	relop  goto 118
+	addop  goto 119
+
+
+state 51
+	simple : term .  (58)
+	term : term . mulop factor  (61)
+
+	T_Mult  shift 120
+	T_Div  shift 121
+	T_Set  reduce 58
+	T_Or  reduce 58
+	T_And  reduce 58
+	T_Eq  reduce 58
+	T_Neq  reduce 58
+	T_Le  reduce 58
+	T_Leq  reduce 58
+	T_Ge  reduce 58
+	T_Geq  reduce 58
+	T_Add  reduce 58
+	T_Sub  reduce 58
+	T_Semicolon  reduce 58
+	T_Comma  reduce 58
+	T_RParen  reduce 58
+	T_RSq_Bracket  reduce 58
+
+	mulop  goto 122
+
+
+state 52
+	term : factor .  (60)
+
+	.  reduce 60
+
+
+state 53
+	factor : unop . factor  (62)
+
+	T_Char  shift 16
+	T_String  shift 17
+	T_Const  shift 18
+	T_Float_Const  shift 19
+	T_Id  shift 7
+	T_New  shift 25
+	T_Lambda  shift 26
+	T_Null  shift 27
+	T_True  shift 28
+	T_False  shift 29
+	T_Sub  shift 36
+	T_Not  shift 37
+	T_LParen  shift 39
+	.  error
+
+	id  goto 42
+	literal  goto 44
+	factor  goto 123
+	unop  goto 53
+	charliteral  goto 54
+	stringliteral  goto 55
+	intliteral  goto 56
+	floatliteral  goto 57
+
+
+state 54
+	literal : charliteral .  (78)
+
+	.  reduce 78
+
+
+state 55
+	literal : stringliteral .  (79)
+
+	.  reduce 79
+
+
+state 56
+	literal : intliteral .  (80)
+
+	.  reduce 80
+
+
+state 57
+	literal : floatliteral .  (81)
+
+	.  reduce 81
+
+
+state 58
+	classdecs : classdec classdecs .  (97)
+
+	.  reduce 97
+
+
+state 59
+	tvar : T_Var .  (132)
+
+	.  reduce 132
+
+
+state 60
+	typevars : T_Le tvars . T_Ge  (4)
+
+	T_Ge  shift 124
+	.  error
+
+
+state 61
+	tvars : tvar .  (86)
+	tvars : tvar . T_Comma tvars  (87)
+
+	T_Comma  shift 125
+	T_Ge  reduce 86
+
+
+state 62
+	extends : T_Extends . typeapps  (6)
+	typeapps : .  (90)
+
+	T_Id  shift 7
+	T_Var  shift 59
+	T_LCur_Bracket  reduce 90
+
+	id  goto 91
+	typeapps  goto 126
+	typeapp  goto 127
+	tvar  goto 79
+
+
+state 63
+	protodec : T_Protocol id typevars extends . T_LCur_Bracket funprotos T_RCur_Bracket  (2)
+
+	T_LCur_Bracket  shift 128
+	.  error
+
+
+state 64
+	classdec : T_Class id typevars . T_Implements typeapps classbody  (12)
+
+	T_Implements  shift 129
+	.  error
+
+
+state 65
+	stm : T_If T_LParen . exp T_RParen stm T_Else stm  (42)
+
+	T_Char  shift 16
+	T_String  shift 17
+	T_Const  shift 18
+	T_Float_Const  shift 19
+	T_Id  shift 7
+	T_New  shift 25
+	T_Lambda  shift 26
+	T_Null  shift 27
+	T_True  shift 28
+	T_False  shift 29
+	T_Sub  shift 36
+	T_Not  shift 37
+	T_LParen  shift 39
+	.  error
+
+	id  goto 42
+	literal  goto 44
+	exp  goto 130
+	lhs  goto 47
+	disjunct  goto 48
+	conjunct  goto 49
+	simple  goto 50
+	term  goto 51
+	factor  goto 52
+	unop  goto 53
+	charliteral  goto 54
+	stringliteral  goto 55
+	intliteral  goto 56
+	floatliteral  goto 57
+
+
+state 66
+	stm : T_While T_LParen . exp T_RParen stm  (43)
+
+	T_Char  shift 16
+	T_String  shift 17
+	T_Const  shift 18
+	T_Float_Const  shift 19
+	T_Id  shift 7
+	T_New  shift 25
+	T_Lambda  shift 26
+	T_Null  shift 27
+	T_True  shift 28
+	T_False  shift 29
+	T_Sub  shift 36
+	T_Not  shift 37
+	T_LParen  shift 39
+	.  error
+
+	id  goto 42
+	literal  goto 44
+	exp  goto 131
+	lhs  goto 47
+	disjunct  goto 48
+	conjunct  goto 49
+	simple  goto 50
+	term  goto 51
+	factor  goto 52
+	unop  goto 53
+	charliteral  goto 54
+	stringliteral  goto 55
+	intliteral  goto 56
+	floatliteral  goto 57
+
+
+state 67
+	stm : T_For T_LParen . vardec exp T_Semicolon exp T_RParen stm  (44)
+
+	T_Id  shift 7
+	T_Var  shift 59
+	T_Function  shift 71
+	T_Bool  shift 72
+	T_PTChar  shift 73
+	T_PTString  shift 74
+	T_Int  shift 75
+	T_Float  shift 76
+	.  error
+
+	id  goto 91
+	typeapp  goto 78
+	tvar  goto 79
+	primtype  goto 80
+	ttype  goto 93
+	vardec  goto 132
+
+
+state 68
+	stm : T_Return T_Semicolon .  (45)
+
+	.  reduce 45
+
+
+state 69
+	stm : T_Return exp . T_Semicolon  (46)
+
+	T_Semicolon  shift 133
+	.  error
+
+
+state 70
+	stm : T_Halt T_LParen . exp T_RParen T_Semicolon  (48)
+
+	T_Char  shift 16
+	T_String  shift 17
+	T_Const  shift 18
+	T_Float_Const  shift 19
+	T_Id  shift 7
+	T_New  shift 25
+	T_Lambda  shift 26
+	T_Null  shift 27
+	T_True  shift 28
+	T_False  shift 29
+	T_Sub  shift 36
+	T_Not  shift 37
+	T_LParen  shift 39
+	.  error
+
+	id  goto 42
+	literal  goto 44
+	exp  goto 134
+	lhs  goto 47
+	disjunct  goto 48
+	conjunct  goto 49
+	simple  goto 50
+	term  goto 51
+	factor  goto 52
+	unop  goto 53
+	charliteral  goto 54
+	stringliteral  goto 55
+	intliteral  goto 56
+	floatliteral  goto 57
+
+
+state 71
+	ttype : T_Function . T_LParen T_LParen types T_RParen T_Arrow rtype T_RParen  (32)
+
+	T_LParen  shift 135
+	.  error
+
+
+state 72
+	primtype : T_Bool .  (33)
+
+	.  reduce 33
+
+
+state 73
+	primtype : T_PTChar .  (34)
+
+	.  reduce 34
+
+
+state 74
+	primtype : T_PTString .  (35)
+
+	.  reduce 35
+
+
+state 75
+	primtype : T_Int .  (36)
+
+	.  reduce 36
+
+
+state 76
+	primtype : T_Float .  (37)
+
+	.  reduce 37
+
+
+state 77
+	typeapp : id .  (7)
+	typeapp : id . T_Le types T_Ge  (8)
+	factor : T_New id . T_LParen actuals T_RParen factor_rest  (64)
+	factor : T_New id . T_Le types T_Ge T_LParen actuals T_RParen factor_rest  (65)
+
+	T_Le  shift 136
+	T_LParen  shift 137
+	T_LSq_Bracket  reduce 7
+
+
+state 78
+	ttype : typeapp .  (30)
+
+	.  reduce 30
+
+
+state 79
+	typeapp : tvar .  (9)
+
+	.  reduce 9
+
+
+state 80
+	ttype : primtype .  (29)
+
+	.  reduce 29
+
+
+state 81
+	ttype : ttype . T_LSq_Bracket T_RSq_Bracket  (31)
+	factor : T_New ttype . T_LSq_Bracket exp T_RSq_Bracket factor_rest  (66)
+
+	T_LSq_Bracket  shift 138
+	.  error
+
+
+state 82
+	factor : T_Lambda T_LParen . formals T_RParen block factor_rest  (67)
+	factor : T_Lambda T_LParen . formals T_RParen T_Colon rtype block factor_rest  (68)
+	formals : .  (108)
+
+	T_Id  shift 7
+	T_Var  shift 59
+	T_Function  shift 71
+	T_Bool  shift 72
+	T_PTChar  shift 73
+	T_PTString  shift 74
+	T_Int  shift 75
+	T_Float  shift 76
+	T_RParen  reduce 108
+
+	id  goto 91
+	typeapp  goto 78
+	tvar  goto 79
+	formals  goto 139
+	primtype  goto 80
+	formal  goto 140
+	ttype  goto 141
+
+
+state 83
+	print_funcs : T_Printline T_LParen . T_RParen T_Semicolon  (133)
+
+	T_RParen  shift 142
+	.  error
+
+
+state 84
+	print_funcs : T_Printbool T_LParen . exp T_RParen T_Semicolon  (136)
+
+	T_Char  shift 16
+	T_String  shift 17
+	T_Const  shift 18
+	T_Float_Const  shift 19
+	T_Id  shift 7
+	T_New  shift 25
+	T_Lambda  shift 26
+	T_Null  shift 27
+	T_True  shift 28
+	T_False  shift 29
+	T_Sub  shift 36
+	T_Not  shift 37
+	T_LParen  shift 39
+	.  error
+
+	id  goto 42
+	literal  goto 44
+	exp  goto 143
+	lhs  goto 47
+	disjunct  goto 48
+	conjunct  goto 49
+	simple  goto 50
+	term  goto 51
+	factor  goto 52
+	unop  goto 53
+	charliteral  goto 54
+	stringliteral  goto 55
+	intliteral  goto 56
+	floatliteral  goto 57
+
+
+state 85
+	print_funcs : T_Printchar T_LParen . exp T_RParen T_Semicolon  (138)
+
+	T_Char  shift 16
+	T_String  shift 17
+	T_Const  shift 18
+	T_Float_Const  shift 19
+	T_Id  shift 7
+	T_New  shift 25
+	T_Lambda  shift 26
+	T_Null  shift 27
+	T_True  shift 28
+	T_False  shift 29
+	T_Sub  shift 36
+	T_Not  shift 37
+	T_LParen  shift 39
+	.  error
+
+	id  goto 42
+	literal  goto 44
+	exp  goto 144
+	lhs  goto 47
+	disjunct  goto 48
+	conjunct  goto 49
+	simple  goto 50
+	term  goto 51
+	factor  goto 52
+	unop  goto 53
+	charliteral  goto 54
+	stringliteral  goto 55
+	intliteral  goto 56
+	floatliteral  goto 57
+
+
+state 86
+	print_funcs : T_Printstring T_LParen . exp T_RParen T_Semicolon  (135)
+
+	T_Char  shift 16
+	T_String  shift 17
+	T_Const  shift 18
+	T_Float_Const  shift 19
+	T_Id  shift 7
+	T_New  shift 25
+	T_Lambda  shift 26
+	T_Null  shift 27
+	T_True  shift 28
+	T_False  shift 29
+	T_Sub  shift 36
+	T_Not  shift 37
+	T_LParen  shift 39
+	.  error
+
+	id  goto 42
+	literal  goto 44
+	exp  goto 145
+	lhs  goto 47
+	disjunct  goto 48
+	conjunct  goto 49
+	simple  goto 50
+	term  goto 51
+	factor  goto 52
+	unop  goto 53
+	charliteral  goto 54
+	stringliteral  goto 55
+	intliteral  goto 56
+	floatliteral  goto 57
+
+
+state 87
+	print_funcs : T_Printint T_LParen . exp T_RParen T_Semicolon  (134)
+
+	T_Char  shift 16
+	T_String  shift 17
+	T_Const  shift 18
+	T_Float_Const  shift 19
+	T_Id  shift 7
+	T_New  shift 25
+	T_Lambda  shift 26
+	T_Null  shift 27
+	T_True  shift 28
+	T_False  shift 29
+	T_Sub  shift 36
+	T_Not  shift 37
+	T_LParen  shift 39
+	.  error
+
+	id  goto 42
+	literal  goto 44
+	exp  goto 146
+	lhs  goto 47
+	disjunct  goto 48
+	conjunct  goto 49
+	simple  goto 50
+	term  goto 51
+	factor  goto 52
+	unop  goto 53
+	charliteral  goto 54
+	stringliteral  goto 55
+	intliteral  goto 56
+	floatliteral  goto 57
+
+
+state 88
+	print_funcs : T_Printfloat T_LParen . exp T_RParen T_Semicolon  (137)
+
+	T_Char  shift 16
+	T_String  shift 17
+	T_Const  shift 18
+	T_Float_Const  shift 19
+	T_Id  shift 7
+	T_New  shift 25
+	T_Lambda  shift 26
+	T_Null  shift 27
+	T_True  shift 28
+	T_False  shift 29
+	T_Sub  shift 36
+	T_Not  shift 37
+	T_LParen  shift 39
+	.  error
+
+	id  goto 42
+	literal  goto 44
+	exp  goto 147
+	lhs  goto 47
+	disjunct  goto 48
+	conjunct  goto 49
+	simple  goto 50
+	term  goto 51
+	factor  goto 52
+	unop  goto 53
+	charliteral  goto 54
+	stringliteral  goto 55
+	intliteral  goto 56
+	floatliteral  goto 57
+
+
+state 89
+	factor : T_LParen exp . T_RParen factor_rest  (69)
+
+	T_RParen  shift 148
+	.  error
+
+
+state 90
+	fundec : T_Fun . id typevars T_LParen formals T_RParen block  (23)
+	fundec : T_Fun . id typevars T_LParen formals T_RParen T_Colon rtype block  (24)
+
+	T_Id  shift 7
+	.  error
+
+	id  goto 149
+
+
+state 91
+	typeapp : id .  (7)
+	typeapp : id . T_Le types T_Ge  (8)
+
+	T_Le  shift 150
+	T_Id  reduce 7
+	T_Ge  reduce 7
+	T_Semicolon  reduce 7
+	T_Comma  reduce 7
+	T_RParen  reduce 7
+	T_LSq_Bracket  reduce 7
+	T_LCur_Bracket  reduce 7
+
+
+state 92
+	localdec : fundec .  (27)
+
+	.  reduce 27
+
+
+state 93
+	vardec : ttype . id T_Set exp T_Semicolon  (28)
+	ttype : ttype . T_LSq_Bracket T_RSq_Bracket  (31)
+
+	T_Id  shift 7
+	T_LSq_Bracket  shift 151
+	.  error
+
+	id  goto 152
+
+
+state 94
+	block : T_LCur_Bracket localdecs . stms T_RCur_Bracket  (25)
+	stms : .  (106)
+
+	T_Char  shift 16
+	T_String  shift 17
+	T_Const  shift 18
+	T_Float_Const  shift 19
+	T_Id  shift 7
+	T_If  shift 20
+	T_While  shift 21
+	T_For  shift 22
+	T_Return  shift 23
+	T_Halt  shift 24
+	T_New  shift 25
+	T_Lambda  shift 26
+	T_Null  shift 27
+	T_True  shift 28
+	T_False  shift 29
+	T_Printline  shift 30
+	T_Printbool  shift 31
+	T_Printchar  shift 32
+	T_Printstring  shift 33
+	T_Printint  shift 34
+	T_Printfloat  shift 35
+	T_Sub  shift 36
+	T_Not  shift 37
+	T_Semicolon  shift 38
+	T_LParen  shift 39
+	T_LCur_Bracket  shift 40
+	T_RCur_Bracket  reduce 106
+
+	stm  goto 153
+	id  goto 42
+	block  goto 43
+	literal  goto 44
+	stms  goto 154
+	exp  goto 45
+	print_funcs  goto 46
+	lhs  goto 47
+	disjunct  goto 48
+	conjunct  goto 49
+	simple  goto 50
+	term  goto 51
+	factor  goto 52
+	unop  goto 53
+	charliteral  goto 54
+	stringliteral  goto 55
+	intliteral  goto 56
+	floatliteral  goto 57
+
+
+95: shift/reduce conflict (shift 7, reduce 104) on T_Id
+state 95
+	localdecs : localdec . localdecs  (105)
+	localdecs : .  (104)
+
+	T_Id  shift 7
+	T_Var  shift 59
+	T_Fun  shift 90
+	T_Function  shift 71
+	T_Bool  shift 72
+	T_PTChar  shift 73
+	T_PTString  shift 74
+	T_Int  shift 75
+	T_Float  shift 76
+	T_Char  reduce 104
+	T_String  reduce 104
+	T_Const  reduce 104
+	T_Float_Const  reduce 104
+	T_If  reduce 104
+	T_While  reduce 104
+	T_For  reduce 104
+	T_Return  reduce 104
+	T_Halt  reduce 104
+	T_New  reduce 104
+	T_Lambda  reduce 104
+	T_Null  reduce 104
+	T_True  reduce 104
+	T_False  reduce 104
+	T_Printline  reduce 104
+	T_Printbool  reduce 104
+	T_Printchar  reduce 104
+	T_Printstring  reduce 104
+	T_Printint  reduce 104
+	T_Printfloat  reduce 104
+	T_Sub  reduce 104
+	T_Not  reduce 104
+	T_Semicolon  reduce 104
+	T_LParen  reduce 104
+	T_LCur_Bracket  reduce 104
+	T_RCur_Bracket  reduce 104
+
+	id  goto 91
+	typeapp  goto 78
+	tvar  goto 79
+	fundec  goto 92
+	primtype  goto 80
+	ttype  goto 93
+	localdecs  goto 155
+	localdec  goto 95
+	vardec  goto 96
+
+
+state 96
+	localdec : vardec .  (26)
+
+	.  reduce 26
+
+
+state 97
+	program : protodecs classdecs stm T_Eof .  (1)
+
+	.  reduce 1
+
+
+state 98
+	factor_rest : T_LParen . actuals T_RParen factor_rest  (72)
+	actuals : .  (112)
+
+	T_Char  shift 16
+	T_String  shift 17
+	T_Const  shift 18
+	T_Float_Const  shift 19
+	T_Id  shift 7
+	T_New  shift 25
+	T_Lambda  shift 26
+	T_Null  shift 27
+	T_True  shift 28
+	T_False  shift 29
+	T_Sub  shift 36
+	T_Not  shift 37
+	T_LParen  shift 39
+	T_RParen  reduce 112
+
+	id  goto 42
+	literal  goto 44
+	exp  goto 156
+	lhs  goto 47
+	disjunct  goto 48
+	conjunct  goto 49
+	simple  goto 50
+	term  goto 51
+	factor  goto 52
+	unop  goto 53
+	actuals  goto 157
+	charliteral  goto 54
+	stringliteral  goto 55
+	intliteral  goto 56
+	floatliteral  goto 57
+
+
+state 99
+	factor_rest : T_LSq_Bracket . exp T_RSq_Bracket factor_rest  (74)
+
+	T_Char  shift 16
+	T_String  shift 17
+	T_Const  shift 18
+	T_Float_Const  shift 19
+	T_Id  shift 7
+	T_New  shift 25
+	T_Lambda  shift 26
+	T_Null  shift 27
+	T_True  shift 28
+	T_False  shift 29
+	T_Sub  shift 36
+	T_Not  shift 37
+	T_LParen  shift 39
+	.  error
+
+	id  goto 42
+	literal  goto 44
+	exp  goto 158
+	lhs  goto 47
+	disjunct  goto 48
+	conjunct  goto 49
+	simple  goto 50
+	term  goto 51
+	factor  goto 52
+	unop  goto 53
+	charliteral  goto 54
+	stringliteral  goto 55
+	intliteral  goto 56
+	floatliteral  goto 57
+
+
+state 100
+	factor_rest : T_Dot . id factor_rest  (73)
+
+	T_Id  shift 7
+	.  error
+
+	id  goto 159
+
+
+state 101
+	factor : id factor_rest .  (70)
+
+	.  reduce 70
+
+
+state 102
+	factor : literal factor_rest .  (63)
+
+	.  reduce 63
+
+
+state 103
+	stm : exp T_Semicolon .  (41)
+
+	.  reduce 41
+
+
+state 104
+	assignop : T_Set .  (116)
+
+	.  reduce 116
+
+
+state 105
+	exp : lhs assignop . exp  (51)
+
+	T_Char  shift 16
+	T_String  shift 17
+	T_Const  shift 18
+	T_Float_Const  shift 19
+	T_Id  shift 7
+	T_New  shift 25
+	T_Lambda  shift 26
+	T_Null  shift 27
+	T_True  shift 28
+	T_False  shift 29
+	T_Sub  shift 36
+	T_Not  shift 37
+	T_LParen  shift 39
+	.  error
+
+	id  goto 42
+	literal  goto 44
+	exp  goto 160
+	lhs  goto 47
+	disjunct  goto 48
+	conjunct  goto 49
+	simple  goto 50
+	term  goto 51
+	factor  goto 52
+	unop  goto 53
+	charliteral  goto 54
+	stringliteral  goto 55
+	intliteral  goto 56
+	floatliteral  goto 57
+
+
+state 106
+	orop : T_Or .  (117)
+
+	.  reduce 117
+
+
+state 107
+	lhs : disjunct orop . lhs  (53)
+
+	T_Char  shift 16
+	T_String  shift 17
+	T_Const  shift 18
+	T_Float_Const  shift 19
+	T_Id  shift 7
+	T_New  shift 25
+	T_Lambda  shift 26
+	T_Null  shift 27
+	T_True  shift 28
+	T_False  shift 29
+	T_Sub  shift 36
+	T_Not  shift 37
+	T_LParen  shift 39
+	.  error
+
+	id  goto 42
+	literal  goto 44
+	lhs  goto 161
+	disjunct  goto 48
+	conjunct  goto 49
+	simple  goto 50
+	term  goto 51
+	factor  goto 52
+	unop  goto 53
+	charliteral  goto 54
+	stringliteral  goto 55
+	intliteral  goto 56
+	floatliteral  goto 57
+
+
+state 108
+	andop : T_And .  (118)
+
+	.  reduce 118
+
+
+state 109
+	disjunct : conjunct andop . disjunct  (55)
+
+	T_Char  shift 16
+	T_String  shift 17
+	T_Const  shift 18
+	T_Float_Const  shift 19
+	T_Id  shift 7
+	T_New  shift 25
+	T_Lambda  shift 26
+	T_Null  shift 27
+	T_True  shift 28
+	T_False  shift 29
+	T_Sub  shift 36
+	T_Not  shift 37
+	T_LParen  shift 39
+	.  error
+
+	id  goto 42
+	literal  goto 44
+	disjunct  goto 162
+	conjunct  goto 49
+	simple  goto 50
+	term  goto 51
+	factor  goto 52
+	unop  goto 53
+	charliteral  goto 54
+	stringliteral  goto 55
+	intliteral  goto 56
+	floatliteral  goto 57
+
+
+state 110
+	relop : T_Eq .  (119)
+
+	.  reduce 119
+
+
+state 111
+	relop : T_Neq .  (120)
+
+	.  reduce 120
+
+
+state 112
+	relop : T_Le .  (121)
+
+	.  reduce 121
+
+
+state 113
+	relop : T_Leq .  (122)
+
+	.  reduce 122
+
+
+state 114
+	relop : T_Ge .  (123)
+
+	.  reduce 123
+
+
+state 115
+	relop : T_Geq .  (124)
+
+	.  reduce 124
+
+
+state 116
+	addop : T_Add .  (125)
+
+	.  reduce 125
+
+
+state 117
+	addop : T_Sub .  (126)
+
+	.  reduce 126
+
+
+state 118
+	conjunct : simple relop . simple  (57)
+
+	T_Char  shift 16
+	T_String  shift 17
+	T_Const  shift 18
+	T_Float_Const  shift 19
+	T_Id  shift 7
+	T_New  shift 25
+	T_Lambda  shift 26
+	T_Null  shift 27
+	T_True  shift 28
+	T_False  shift 29
+	T_Sub  shift 36
+	T_Not  shift 37
+	T_LParen  shift 39
+	.  error
+
+	id  goto 42
+	literal  goto 44
+	simple  goto 163
+	term  goto 51
+	factor  goto 52
+	unop  goto 53
+	charliteral  goto 54
+	stringliteral  goto 55
+	intliteral  goto 56
+	floatliteral  goto 57
+
+
+state 119
+	simple : simple addop . term  (59)
+
+	T_Char  shift 16
+	T_String  shift 17
+	T_Const  shift 18
+	T_Float_Const  shift 19
+	T_Id  shift 7
+	T_New  shift 25
+	T_Lambda  shift 26
+	T_Null  shift 27
+	T_True  shift 28
+	T_False  shift 29
+	T_Sub  shift 36
+	T_Not  shift 37
+	T_LParen  shift 39
+	.  error
+
+	id  goto 42
+	literal  goto 44
+	term  goto 164
+	factor  goto 52
+	unop  goto 53
+	charliteral  goto 54
+	stringliteral  goto 55
+	intliteral  goto 56
+	floatliteral  goto 57
+
+
+state 120
+	mulop : T_Mult .  (127)
+
+	.  reduce 127
+
+
+state 121
+	mulop : T_Div .  (128)
+
+	.  reduce 128
+
+
+state 122
+	term : term mulop . factor  (61)
+
+	T_Char  shift 16
+	T_String  shift 17
+	T_Const  shift 18
+	T_Float_Const  shift 19
+	T_Id  shift 7
+	T_New  shift 25
+	T_Lambda  shift 26
+	T_Null  shift 27
+	T_True  shift 28
+	T_False  shift 29
+	T_Sub  shift 36
+	T_Not  shift 37
+	T_LParen  shift 39
+	.  error
+
+	id  goto 42
+	literal  goto 44
+	factor  goto 165
+	unop  goto 53
+	charliteral  goto 54
+	stringliteral  goto 55
+	intliteral  goto 56
+	floatliteral  goto 57
+
+
+state 123
+	factor : unop factor .  (62)
+
+	.  reduce 62
+
+
+state 124
+	typevars : T_Le tvars T_Ge .  (4)
+
+	.  reduce 4
+
+
+state 125
+	tvars : tvar T_Comma . tvars  (87)
+
+	T_Var  shift 59
+	.  error
+
+	tvars  goto 166
+	tvar  goto 61
+
+
+state 126
+	extends : T_Extends typeapps .  (6)
+
+	.  reduce 6
+
+
+state 127
+	typeapps : typeapp . typeapps_rest  (91)
+	typeapps_rest : .  (92)
+
+	T_Comma  shift 167
+	T_LCur_Bracket  reduce 92
+
+	typeapps_rest  goto 168
+
+
+state 128
+	protodec : T_Protocol id typevars extends T_LCur_Bracket . funprotos T_RCur_Bracket  (2)
+	funprotos : .  (94)
+
+	T_Fun  shift 169
+	T_RCur_Bracket  reduce 94
+
+	funprotos  goto 170
+	funproto  goto 171
+
+
+state 129
+	classdec : T_Class id typevars T_Implements . typeapps classbody  (12)
+	typeapps : .  (90)
+
+	T_Id  shift 7
+	T_Var  shift 59
+	T_LCur_Bracket  reduce 90
+
+	id  goto 91
+	typeapps  goto 172
+	typeapp  goto 127
+	tvar  goto 79
+
+
+state 130
+	stm : T_If T_LParen exp . T_RParen stm T_Else stm  (42)
+
+	T_RParen  shift 173
+	.  error
+
+
+state 131
+	stm : T_While T_LParen exp . T_RParen stm  (43)
+
+	T_RParen  shift 174
+	.  error
+
+
+state 132
+	stm : T_For T_LParen vardec . exp T_Semicolon exp T_RParen stm  (44)
+
+	T_Char  shift 16
+	T_String  shift 17
+	T_Const  shift 18
+	T_Float_Const  shift 19
+	T_Id  shift 7
+	T_New  shift 25
+	T_Lambda  shift 26
+	T_Null  shift 27
+	T_True  shift 28
+	T_False  shift 29
+	T_Sub  shift 36
+	T_Not  shift 37
+	T_LParen  shift 39
+	.  error
+
+	id  goto 42
+	literal  goto 44
+	exp  goto 175
+	lhs  goto 47
+	disjunct  goto 48
+	conjunct  goto 49
+	simple  goto 50
+	term  goto 51
+	factor  goto 52
+	unop  goto 53
+	charliteral  goto 54
+	stringliteral  goto 55
+	intliteral  goto 56
+	floatliteral  goto 57
+
+
+state 133
+	stm : T_Return exp T_Semicolon .  (46)
+
+	.  reduce 46
+
+
+state 134
+	stm : T_Halt T_LParen exp . T_RParen T_Semicolon  (48)
+
+	T_RParen  shift 176
+	.  error
+
+
+state 135
+	ttype : T_Function T_LParen . T_LParen types T_RParen T_Arrow rtype T_RParen  (32)
+
+	T_LParen  shift 177
+	.  error
+
+
+state 136
+	typeapp : id T_Le . types T_Ge  (8)
+	factor : T_New id T_Le . types T_Ge T_LParen actuals T_RParen factor_rest  (65)
+	types : .  (98)
+
+	T_Id  shift 7
+	T_Var  shift 59
+	T_Function  shift 71
+	T_Bool  shift 72
+	T_PTChar  shift 73
+	T_PTString  shift 74
+	T_Int  shift 75
+	T_Float  shift 76
+	T_Ge  reduce 98
+
+	id  goto 91
+	typeapp  goto 78
+	types  goto 178
+	tvar  goto 79
+	primtype  goto 80
+	ttype  goto 179
+
+
+state 137
+	factor : T_New id T_LParen . actuals T_RParen factor_rest  (64)
+	actuals : .  (112)
+
+	T_Char  shift 16
+	T_String  shift 17
+	T_Const  shift 18
+	T_Float_Const  shift 19
+	T_Id  shift 7
+	T_New  shift 25
+	T_Lambda  shift 26
+	T_Null  shift 27
+	T_True  shift 28
+	T_False  shift 29
+	T_Sub  shift 36
+	T_Not  shift 37
+	T_LParen  shift 39
+	T_RParen  reduce 112
+
+	id  goto 42
+	literal  goto 44
+	exp  goto 156
+	lhs  goto 47
+	disjunct  goto 48
+	conjunct  goto 49
+	simple  goto 50
+	term  goto 51
+	factor  goto 52
+	unop  goto 53
+	actuals  goto 180
+	charliteral  goto 54
+	stringliteral  goto 55
+	intliteral  goto 56
+	floatliteral  goto 57
+
+
+state 138
+	ttype : ttype T_LSq_Bracket . T_RSq_Bracket  (31)
+	factor : T_New ttype T_LSq_Bracket . exp T_RSq_Bracket factor_rest  (66)
+
+	T_Char  shift 16
+	T_String  shift 17
+	T_Const  shift 18
+	T_Float_Const  shift 19
+	T_Id  shift 7
+	T_New  shift 25
+	T_Lambda  shift 26
+	T_Null  shift 27
+	T_True  shift 28
+	T_False  shift 29
+	T_Sub  shift 36
+	T_Not  shift 37
+	T_LParen  shift 39
+	T_RSq_Bracket  shift 181
+	.  error
+
+	id  goto 42
+	literal  goto 44
+	exp  goto 182
+	lhs  goto 47
+	disjunct  goto 48
+	conjunct  goto 49
+	simple  goto 50
+	term  goto 51
+	factor  goto 52
+	unop  goto 53
+	charliteral  goto 54
+	stringliteral  goto 55
+	intliteral  goto 56
+	floatliteral  goto 57
+
+
+state 139
+	factor : T_Lambda T_LParen formals . T_RParen block factor_rest  (67)
+	factor : T_Lambda T_LParen formals . T_RParen T_Colon rtype block factor_rest  (68)
+
+	T_RParen  shift 183
+	.  error
+
+
+state 140
+	formals : formal . formals_rest  (109)
+	formals_rest : .  (110)
+
+	T_Comma  shift 184
+	T_RParen  reduce 110
+
+	formals_rest  goto 185
+
+
+state 141
+	formal : ttype . id  (22)
+	ttype : ttype . T_LSq_Bracket T_RSq_Bracket  (31)
+
+	T_Id  shift 7
+	T_LSq_Bracket  shift 151
+	.  error
+
+	id  goto 186
+
+
+state 142
+	print_funcs : T_Printline T_LParen T_RParen . T_Semicolon  (133)
+
+	T_Semicolon  shift 187
+	.  error
+
+
+state 143
+	print_funcs : T_Printbool T_LParen exp . T_RParen T_Semicolon  (136)
+
+	T_RParen  shift 188
+	.  error
+
+
+state 144
+	print_funcs : T_Printchar T_LParen exp . T_RParen T_Semicolon  (138)
+
+	T_RParen  shift 189
+	.  error
+
+
+state 145
+	print_funcs : T_Printstring T_LParen exp . T_RParen T_Semicolon  (135)
+
+	T_RParen  shift 190
+	.  error
+
+
+state 146
+	print_funcs : T_Printint T_LParen exp . T_RParen T_Semicolon  (134)
+
+	T_RParen  shift 191
+	.  error
+
+
+state 147
+	print_funcs : T_Printfloat T_LParen exp . T_RParen T_Semicolon  (137)
+
+	T_RParen  shift 192
+	.  error
+
+
+state 148
+	factor : T_LParen exp T_RParen . factor_rest  (69)
+	factor_rest : .  (71)
+
+	T_LParen  shift 98
+	T_LSq_Bracket  shift 99
+	T_Dot  shift 100
+	T_Set  reduce 71
+	T_Or  reduce 71
+	T_And  reduce 71
+	T_Eq  reduce 71
+	T_Neq  reduce 71
+	T_Le  reduce 71
+	T_Leq  reduce 71
+	T_Ge  reduce 71
+	T_Geq  reduce 71
+	T_Add  reduce 71
+	T_Sub  reduce 71
+	T_Mult  reduce 71
+	T_Div  reduce 71
+	T_Semicolon  reduce 71
+	T_Comma  reduce 71
+	T_RParen  reduce 71
+	T_RSq_Bracket  reduce 71
+
+	factor_rest  goto 193
+
+
+state 149
+	fundec : T_Fun id . typevars T_LParen formals T_RParen block  (23)
+	fundec : T_Fun id . typevars T_LParen formals T_RParen T_Colon rtype block  (24)
+	typevars : .  (3)
+
+	T_Le  shift 13
+	T_LParen  reduce 3
+
+	typevars  goto 194
+
+
+state 150
+	typeapp : id T_Le . types T_Ge  (8)
+	types : .  (98)
+
+	T_Id  shift 7
+	T_Var  shift 59
+	T_Function  shift 71
+	T_Bool  shift 72
+	T_PTChar  shift 73
+	T_PTString  shift 74
+	T_Int  shift 75
+	T_Float  shift 76
+	T_Ge  reduce 98
+
+	id  goto 91
+	typeapp  goto 78
+	types  goto 195
+	tvar  goto 79
+	primtype  goto 80
+	ttype  goto 179
+
+
+state 151
+	ttype : ttype T_LSq_Bracket . T_RSq_Bracket  (31)
+
+	T_RSq_Bracket  shift 181
+	.  error
+
+
+state 152
+	vardec : ttype id . T_Set exp T_Semicolon  (28)
+
+	T_Set  shift 196
+	.  error
+
+
+state 153
+	stms : stm . stms  (107)
+	stms : .  (106)
+
+	T_Char  shift 16
+	T_String  shift 17
+	T_Const  shift 18
+	T_Float_Const  shift 19
+	T_Id  shift 7
+	T_If  shift 20
+	T_While  shift 21
+	T_For  shift 22
+	T_Return  shift 23
+	T_Halt  shift 24
+	T_New  shift 25
+	T_Lambda  shift 26
+	T_Null  shift 27
+	T_True  shift 28
+	T_False  shift 29
+	T_Printline  shift 30
+	T_Printbool  shift 31
+	T_Printchar  shift 32
+	T_Printstring  shift 33
+	T_Printint  shift 34
+	T_Printfloat  shift 35
+	T_Sub  shift 36
+	T_Not  shift 37
+	T_Semicolon  shift 38
+	T_LParen  shift 39
+	T_LCur_Bracket  shift 40
+	T_RCur_Bracket  reduce 106
+
+	stm  goto 153
+	id  goto 42
+	block  goto 43
+	literal  goto 44
+	stms  goto 197
+	exp  goto 45
+	print_funcs  goto 46
+	lhs  goto 47
+	disjunct  goto 48
+	conjunct  goto 49
+	simple  goto 50
+	term  goto 51
+	factor  goto 52
+	unop  goto 53
+	charliteral  goto 54
+	stringliteral  goto 55
+	intliteral  goto 56
+	floatliteral  goto 57
+
+
+state 154
+	block : T_LCur_Bracket localdecs stms . T_RCur_Bracket  (25)
+
+	T_RCur_Bracket  shift 198
+	.  error
+
+
+state 155
+	localdecs : localdec localdecs .  (105)
+
+	.  reduce 105
+
+
+state 156
+	actuals : exp . actuals_rest  (113)
+	actuals_rest : .  (114)
+
+	T_Comma  shift 199
+	T_RParen  reduce 114
+
+	actuals_rest  goto 200
+
+
+state 157
+	factor_rest : T_LParen actuals . T_RParen factor_rest  (72)
+
+	T_RParen  shift 201
+	.  error
+
+
+state 158
+	factor_rest : T_LSq_Bracket exp . T_RSq_Bracket factor_rest  (74)
+
+	T_RSq_Bracket  shift 202
+	.  error
+
+
+state 159
+	factor_rest : T_Dot id . factor_rest  (73)
+	factor_rest : .  (71)
+
+	T_LParen  shift 98
+	T_LSq_Bracket  shift 99
+	T_Dot  shift 100
+	T_Set  reduce 71
+	T_Or  reduce 71
+	T_And  reduce 71
+	T_Eq  reduce 71
+	T_Neq  reduce 71
+	T_Le  reduce 71
+	T_Leq  reduce 71
+	T_Ge  reduce 71
+	T_Geq  reduce 71
+	T_Add  reduce 71
+	T_Sub  reduce 71
+	T_Mult  reduce 71
+	T_Div  reduce 71
+	T_Semicolon  reduce 71
+	T_Comma  reduce 71
+	T_RParen  reduce 71
+	T_RSq_Bracket  reduce 71
+
+	factor_rest  goto 203
+
+
+state 160
+	exp : lhs assignop exp .  (51)
+
+	.  reduce 51
+
+
+state 161
+	lhs : disjunct orop lhs .  (53)
+
+	.  reduce 53
+
+
+state 162
+	disjunct : conjunct andop disjunct .  (55)
+
+	.  reduce 55
+
+
+state 163
+	conjunct : simple relop simple .  (57)
+	simple : simple . addop term  (59)
+
+	T_Add  shift 116
+	T_Sub  shift 117
+	T_Set  reduce 57
+	T_Or  reduce 57
+	T_And  reduce 57
+	T_Semicolon  reduce 57
+	T_Comma  reduce 57
+	T_RParen  reduce 57
+	T_RSq_Bracket  reduce 57
+
+	addop  goto 119
+
+
+state 164
+	simple : simple addop term .  (59)
+	term : term . mulop factor  (61)
+
+	T_Mult  shift 120
+	T_Div  shift 121
+	T_Set  reduce 59
+	T_Or  reduce 59
+	T_And  reduce 59
+	T_Eq  reduce 59
+	T_Neq  reduce 59
+	T_Le  reduce 59
+	T_Leq  reduce 59
+	T_Ge  reduce 59
+	T_Geq  reduce 59
+	T_Add  reduce 59
+	T_Sub  reduce 59
+	T_Semicolon  reduce 59
+	T_Comma  reduce 59
+	T_RParen  reduce 59
+	T_RSq_Bracket  reduce 59
+
+	mulop  goto 122
+
+
+state 165
+	term : term mulop factor .  (61)
+
+	.  reduce 61
+
+
+state 166
+	tvars : tvar T_Comma tvars .  (87)
+
+	.  reduce 87
+
+
+state 167
+	typeapps_rest : T_Comma . typeapp typeapps_rest  (93)
+
+	T_Id  shift 7
+	T_Var  shift 59
+	.  error
+
+	id  goto 91
+	typeapp  goto 204
+	tvar  goto 79
+
+
+state 168
+	typeapps : typeapp typeapps_rest .  (91)
+
+	.  reduce 91
+
+
+state 169
+	funproto : T_Fun . id typevars T_LParen formals T_RParen T_Semicolon  (10)
+	funproto : T_Fun . id typevars T_LParen formals T_RParen T_Colon rtype T_Semicolon  (11)
+
+	T_Id  shift 7
+	.  error
+
+	id  goto 205
+
+
+state 170
+	protodec : T_Protocol id typevars extends T_LCur_Bracket funprotos . T_RCur_Bracket  (2)
+
+	T_RCur_Bracket  shift 206
+	.  error
+
+
+state 171
+	funprotos : funproto . funprotos  (95)
+	funprotos : .  (94)
+
+	T_Fun  shift 169
+	T_RCur_Bracket  reduce 94
+
+	funprotos  goto 207
+	funproto  goto 171
+
+
+state 172
+	classdec : T_Class id typevars T_Implements typeapps . classbody  (12)
+
+	T_LCur_Bracket  shift 208
+	.  error
+
+	classbody  goto 209
+
+
+state 173
+	stm : T_If T_LParen exp T_RParen . stm T_Else stm  (42)
+
+	T_Char  shift 16
+	T_String  shift 17
+	T_Const  shift 18
+	T_Float_Const  shift 19
+	T_Id  shift 7
+	T_If  shift 20
+	T_While  shift 21
+	T_For  shift 22
+	T_Return  shift 23
+	T_Halt  shift 24
+	T_New  shift 25
+	T_Lambda  shift 26
+	T_Null  shift 27
+	T_True  shift 28
+	T_False  shift 29
+	T_Printline  shift 30
+	T_Printbool  shift 31
+	T_Printchar  shift 32
+	T_Printstring  shift 33
+	T_Printint  shift 34
+	T_Printfloat  shift 35
+	T_Sub  shift 36
+	T_Not  shift 37
+	T_Semicolon  shift 38
+	T_LParen  shift 39
+	T_LCur_Bracket  shift 40
+	.  error
+
+	stm  goto 210
+	id  goto 42
+	block  goto 43
+	literal  goto 44
+	exp  goto 45
+	print_funcs  goto 46
+	lhs  goto 47
+	disjunct  goto 48
+	conjunct  goto 49
+	simple  goto 50
+	term  goto 51
+	factor  goto 52
+	unop  goto 53
+	charliteral  goto 54
+	stringliteral  goto 55
+	intliteral  goto 56
+	floatliteral  goto 57
+
+
+state 174
+	stm : T_While T_LParen exp T_RParen . stm  (43)
+
+	T_Char  shift 16
+	T_String  shift 17
+	T_Const  shift 18
+	T_Float_Const  shift 19
+	T_Id  shift 7
+	T_If  shift 20
+	T_While  shift 21
+	T_For  shift 22
+	T_Return  shift 23
+	T_Halt  shift 24
+	T_New  shift 25
+	T_Lambda  shift 26
+	T_Null  shift 27
+	T_True  shift 28
+	T_False  shift 29
+	T_Printline  shift 30
+	T_Printbool  shift 31
+	T_Printchar  shift 32
+	T_Printstring  shift 33
+	T_Printint  shift 34
+	T_Printfloat  shift 35
+	T_Sub  shift 36
+	T_Not  shift 37
+	T_Semicolon  shift 38
+	T_LParen  shift 39
+	T_LCur_Bracket  shift 40
+	.  error
+
+	stm  goto 211
+	id  goto 42
+	block  goto 43
+	literal  goto 44
+	exp  goto 45
+	print_funcs  goto 46
+	lhs  goto 47
+	disjunct  goto 48
+	conjunct  goto 49
+	simple  goto 50
+	term  goto 51
+	factor  goto 52
+	unop  goto 53
+	charliteral  goto 54
+	stringliteral  goto 55
+	intliteral  goto 56
+	floatliteral  goto 57
+
+
+state 175
+	stm : T_For T_LParen vardec exp . T_Semicolon exp T_RParen stm  (44)
+
+	T_Semicolon  shift 212
+	.  error
+
+
+state 176
+	stm : T_Halt T_LParen exp T_RParen . T_Semicolon  (48)
+
+	T_Semicolon  shift 213
+	.  error
+
+
+state 177
+	ttype : T_Function T_LParen T_LParen . types T_RParen T_Arrow rtype T_RParen  (32)
+	types : .  (98)
+
+	T_Id  shift 7
+	T_Var  shift 59
+	T_Function  shift 71
+	T_Bool  shift 72
+	T_PTChar  shift 73
+	T_PTString  shift 74
+	T_Int  shift 75
+	T_Float  shift 76
+	T_RParen  reduce 98
+
+	id  goto 91
+	typeapp  goto 78
+	types  goto 214
+	tvar  goto 79
+	primtype  goto 80
+	ttype  goto 179
+
+
+state 178
+	typeapp : id T_Le types . T_Ge  (8)
+	factor : T_New id T_Le types . T_Ge T_LParen actuals T_RParen factor_rest  (65)
+
+	T_Ge  shift 215
+	.  error
+
+
+state 179
+	ttype : ttype . T_LSq_Bracket T_RSq_Bracket  (31)
+	types : ttype . types_rest  (99)
+	types_rest : .  (100)
+
+	T_Comma  shift 216
+	T_LSq_Bracket  shift 151
+	T_Ge  reduce 100
+	T_RParen  reduce 100
+
+	types_rest  goto 217
+
+
+state 180
+	factor : T_New id T_LParen actuals . T_RParen factor_rest  (64)
+
+	T_RParen  shift 218
+	.  error
+
+
+state 181
+	ttype : ttype T_LSq_Bracket T_RSq_Bracket .  (31)
+
+	.  reduce 31
+
+
+state 182
+	factor : T_New ttype T_LSq_Bracket exp . T_RSq_Bracket factor_rest  (66)
+
+	T_RSq_Bracket  shift 219
+	.  error
+
+
+state 183
+	factor : T_Lambda T_LParen formals T_RParen . block factor_rest  (67)
+	factor : T_Lambda T_LParen formals T_RParen . T_Colon rtype block factor_rest  (68)
+
+	T_Colon  shift 220
+	T_LCur_Bracket  shift 40
+	.  error
+
+	block  goto 221
+
+
+state 184
+	formals_rest : T_Comma . formal formals_rest  (111)
+
+	T_Id  shift 7
+	T_Var  shift 59
+	T_Function  shift 71
+	T_Bool  shift 72
+	T_PTChar  shift 73
+	T_PTString  shift 74
+	T_Int  shift 75
+	T_Float  shift 76
+	.  error
+
+	id  goto 91
+	typeapp  goto 78
+	tvar  goto 79
+	primtype  goto 80
+	formal  goto 222
+	ttype  goto 141
+
+
+state 185
+	formals : formal formals_rest .  (109)
+
+	.  reduce 109
+
+
+state 186
+	formal : ttype id .  (22)
+
+	.  reduce 22
+
+
+state 187
+	print_funcs : T_Printline T_LParen T_RParen T_Semicolon .  (133)
+
+	.  reduce 133
+
+
+state 188
+	print_funcs : T_Printbool T_LParen exp T_RParen . T_Semicolon  (136)
+
+	T_Semicolon  shift 223
+	.  error
+
+
+state 189
+	print_funcs : T_Printchar T_LParen exp T_RParen . T_Semicolon  (138)
+
+	T_Semicolon  shift 224
+	.  error
+
+
+state 190
+	print_funcs : T_Printstring T_LParen exp T_RParen . T_Semicolon  (135)
+
+	T_Semicolon  shift 225
+	.  error
+
+
+state 191
+	print_funcs : T_Printint T_LParen exp T_RParen . T_Semicolon  (134)
+
+	T_Semicolon  shift 226
+	.  error
+
+
+state 192
+	print_funcs : T_Printfloat T_LParen exp T_RParen . T_Semicolon  (137)
+
+	T_Semicolon  shift 227
+	.  error
+
+
+state 193
+	factor : T_LParen exp T_RParen factor_rest .  (69)
+
+	.  reduce 69
+
+
+state 194
+	fundec : T_Fun id typevars . T_LParen formals T_RParen block  (23)
+	fundec : T_Fun id typevars . T_LParen formals T_RParen T_Colon rtype block  (24)
+
+	T_LParen  shift 228
+	.  error
+
+
+state 195
+	typeapp : id T_Le types . T_Ge  (8)
+
+	T_Ge  shift 229
+	.  error
+
+
+state 196
+	vardec : ttype id T_Set . exp T_Semicolon  (28)
+
+	T_Char  shift 16
+	T_String  shift 17
+	T_Const  shift 18
+	T_Float_Const  shift 19
+	T_Id  shift 7
+	T_New  shift 25
+	T_Lambda  shift 26
+	T_Null  shift 27
+	T_True  shift 28
+	T_False  shift 29
+	T_Sub  shift 36
+	T_Not  shift 37
+	T_LParen  shift 39
+	.  error
+
+	id  goto 42
+	literal  goto 44
+	exp  goto 230
+	lhs  goto 47
+	disjunct  goto 48
+	conjunct  goto 49
+	simple  goto 50
+	term  goto 51
+	factor  goto 52
+	unop  goto 53
+	charliteral  goto 54
+	stringliteral  goto 55
+	intliteral  goto 56
+	floatliteral  goto 57
+
+
+state 197
+	stms : stm stms .  (107)
+
+	.  reduce 107
+
+
+state 198
+	block : T_LCur_Bracket localdecs stms T_RCur_Bracket .  (25)
+
+	.  reduce 25
+
+
+state 199
+	actuals_rest : T_Comma . exp actuals_rest  (115)
+
+	T_Char  shift 16
+	T_String  shift 17
+	T_Const  shift 18
+	T_Float_Const  shift 19
+	T_Id  shift 7
+	T_New  shift 25
+	T_Lambda  shift 26
+	T_Null  shift 27
+	T_True  shift 28
+	T_False  shift 29
+	T_Sub  shift 36
+	T_Not  shift 37
+	T_LParen  shift 39
+	.  error
+
+	id  goto 42
+	literal  goto 44
+	exp  goto 231
+	lhs  goto 47
+	disjunct  goto 48
+	conjunct  goto 49
+	simple  goto 50
+	term  goto 51
+	factor  goto 52
+	unop  goto 53
+	charliteral  goto 54
+	stringliteral  goto 55
+	intliteral  goto 56
+	floatliteral  goto 57
+
+
+state 200
+	actuals : exp actuals_rest .  (113)
+
+	.  reduce 113
+
+
+state 201
+	factor_rest : T_LParen actuals T_RParen . factor_rest  (72)
+	factor_rest : .  (71)
+
+	T_LParen  shift 98
+	T_LSq_Bracket  shift 99
+	T_Dot  shift 100
+	T_Set  reduce 71
+	T_Or  reduce 71
+	T_And  reduce 71
+	T_Eq  reduce 71
+	T_Neq  reduce 71
+	T_Le  reduce 71
+	T_Leq  reduce 71
+	T_Ge  reduce 71
+	T_Geq  reduce 71
+	T_Add  reduce 71
+	T_Sub  reduce 71
+	T_Mult  reduce 71
+	T_Div  reduce 71
+	T_Semicolon  reduce 71
+	T_Comma  reduce 71
+	T_RParen  reduce 71
+	T_RSq_Bracket  reduce 71
+
+	factor_rest  goto 232
+
+
+state 202
+	factor_rest : T_LSq_Bracket exp T_RSq_Bracket . factor_rest  (74)
+	factor_rest : .  (71)
+
+	T_LParen  shift 98
+	T_LSq_Bracket  shift 99
+	T_Dot  shift 100
+	T_Set  reduce 71
+	T_Or  reduce 71
+	T_And  reduce 71
+	T_Eq  reduce 71
+	T_Neq  reduce 71
+	T_Le  reduce 71
+	T_Leq  reduce 71
+	T_Ge  reduce 71
+	T_Geq  reduce 71
+	T_Add  reduce 71
+	T_Sub  reduce 71
+	T_Mult  reduce 71
+	T_Div  reduce 71
+	T_Semicolon  reduce 71
+	T_Comma  reduce 71
+	T_RParen  reduce 71
+	T_RSq_Bracket  reduce 71
+
+	factor_rest  goto 233
+
+
+state 203
+	factor_rest : T_Dot id factor_rest .  (73)
+
+	.  reduce 73
+
+
+state 204
+	typeapps_rest : T_Comma typeapp . typeapps_rest  (93)
+	typeapps_rest : .  (92)
+
+	T_Comma  shift 167
+	T_LCur_Bracket  reduce 92
+
+	typeapps_rest  goto 234
+
+
+state 205
+	funproto : T_Fun id . typevars T_LParen formals T_RParen T_Semicolon  (10)
+	funproto : T_Fun id . typevars T_LParen formals T_RParen T_Colon rtype T_Semicolon  (11)
+	typevars : .  (3)
+
+	T_Le  shift 13
+	T_LParen  reduce 3
+
+	typevars  goto 235
+
+
+state 206
+	protodec : T_Protocol id typevars extends T_LCur_Bracket funprotos T_RCur_Bracket .  (2)
+
+	.  reduce 2
+
+
+state 207
+	funprotos : funproto funprotos .  (95)
+
+	.  reduce 95
+
+
+state 208
+	classbody : T_LCur_Bracket . init bodydecs T_RCur_Bracket  (13)
+
+	T_LParen  shift 236
+	.  error
+
+	init  goto 237
+
+
+state 209
+	classdec : T_Class id typevars T_Implements typeapps classbody .  (12)
+
+	.  reduce 12
+
+
+state 210
+	stm : T_If T_LParen exp T_RParen stm . T_Else stm  (42)
+
+	T_Else  shift 238
+	.  error
+
+
+state 211
+	stm : T_While T_LParen exp T_RParen stm .  (43)
+
+	.  reduce 43
+
+
+state 212
+	stm : T_For T_LParen vardec exp T_Semicolon . exp T_RParen stm  (44)
+
+	T_Char  shift 16
+	T_String  shift 17
+	T_Const  shift 18
+	T_Float_Const  shift 19
+	T_Id  shift 7
+	T_New  shift 25
+	T_Lambda  shift 26
+	T_Null  shift 27
+	T_True  shift 28
+	T_False  shift 29
+	T_Sub  shift 36
+	T_Not  shift 37
+	T_LParen  shift 39
+	.  error
+
+	id  goto 42
+	literal  goto 44
+	exp  goto 239
+	lhs  goto 47
+	disjunct  goto 48
+	conjunct  goto 49
+	simple  goto 50
+	term  goto 51
+	factor  goto 52
+	unop  goto 53
+	charliteral  goto 54
+	stringliteral  goto 55
+	intliteral  goto 56
+	floatliteral  goto 57
+
+
+state 213
+	stm : T_Halt T_LParen exp T_RParen T_Semicolon .  (48)
+
+	.  reduce 48
+
+
+state 214
+	ttype : T_Function T_LParen T_LParen types . T_RParen T_Arrow rtype T_RParen  (32)
+
+	T_RParen  shift 240
+	.  error
+
+
+state 215
+	typeapp : id T_Le types T_Ge .  (8)
+	factor : T_New id T_Le types T_Ge . T_LParen actuals T_RParen factor_rest  (65)
+
+	T_LParen  shift 241
+	T_LSq_Bracket  reduce 8
+
+
+state 216
+	types_rest : T_Comma . ttype types_rest  (101)
+
+	T_Id  shift 7
+	T_Var  shift 59
+	T_Function  shift 71
+	T_Bool  shift 72
+	T_PTChar  shift 73
+	T_PTString  shift 74
+	T_Int  shift 75
+	T_Float  shift 76
+	.  error
+
+	id  goto 91
+	typeapp  goto 78
+	tvar  goto 79
+	primtype  goto 80
+	ttype  goto 242
+
+
+state 217
+	types : ttype types_rest .  (99)
+
+	.  reduce 99
+
+
+state 218
+	factor : T_New id T_LParen actuals T_RParen . factor_rest  (64)
+	factor_rest : .  (71)
+
+	T_LParen  shift 98
+	T_LSq_Bracket  shift 99
+	T_Dot  shift 100
+	T_Set  reduce 71
+	T_Or  reduce 71
+	T_And  reduce 71
+	T_Eq  reduce 71
+	T_Neq  reduce 71
+	T_Le  reduce 71
+	T_Leq  reduce 71
+	T_Ge  reduce 71
+	T_Geq  reduce 71
+	T_Add  reduce 71
+	T_Sub  reduce 71
+	T_Mult  reduce 71
+	T_Div  reduce 71
+	T_Semicolon  reduce 71
+	T_Comma  reduce 71
+	T_RParen  reduce 71
+	T_RSq_Bracket  reduce 71
+
+	factor_rest  goto 243
+
+
+state 219
+	factor : T_New ttype T_LSq_Bracket exp T_RSq_Bracket . factor_rest  (66)
+	factor_rest : .  (71)
+
+	T_LParen  shift 98
+	T_LSq_Bracket  shift 99
+	T_Dot  shift 100
+	T_Set  reduce 71
+	T_Or  reduce 71
+	T_And  reduce 71
+	T_Eq  reduce 71
+	T_Neq  reduce 71
+	T_Le  reduce 71
+	T_Leq  reduce 71
+	T_Ge  reduce 71
+	T_Geq  reduce 71
+	T_Add  reduce 71
+	T_Sub  reduce 71
+	T_Mult  reduce 71
+	T_Div  reduce 71
+	T_Semicolon  reduce 71
+	T_Comma  reduce 71
+	T_RParen  reduce 71
+	T_RSq_Bracket  reduce 71
+
+	factor_rest  goto 244
+
+
+state 220
+	factor : T_Lambda T_LParen formals T_RParen T_Colon . rtype block factor_rest  (68)
+
+	T_Id  shift 7
+	T_Var  shift 59
+	T_Function  shift 71
+	T_Bool  shift 72
+	T_PTChar  shift 73
+	T_PTString  shift 74
+	T_Int  shift 75
+	T_Float  shift 76
+	T_Void  shift 245
+	.  error
+
+	id  goto 91
+	typeapp  goto 78
+	tvar  goto 79
+	rtype  goto 246
+	primtype  goto 80
+	ttype  goto 247
+
+
+state 221
+	factor : T_Lambda T_LParen formals T_RParen block . factor_rest  (67)
+	factor_rest : .  (71)
+
+	T_LParen  shift 98
+	T_LSq_Bracket  shift 99
+	T_Dot  shift 100
+	T_Set  reduce 71
+	T_Or  reduce 71
+	T_And  reduce 71
+	T_Eq  reduce 71
+	T_Neq  reduce 71
+	T_Le  reduce 71
+	T_Leq  reduce 71
+	T_Ge  reduce 71
+	T_Geq  reduce 71
+	T_Add  reduce 71
+	T_Sub  reduce 71
+	T_Mult  reduce 71
+	T_Div  reduce 71
+	T_Semicolon  reduce 71
+	T_Comma  reduce 71
+	T_RParen  reduce 71
+	T_RSq_Bracket  reduce 71
+
+	factor_rest  goto 248
+
+
+state 222
+	formals_rest : T_Comma formal . formals_rest  (111)
+	formals_rest : .  (110)
+
+	T_Comma  shift 184
+	T_RParen  reduce 110
+
+	formals_rest  goto 249
+
+
+state 223
+	print_funcs : T_Printbool T_LParen exp T_RParen T_Semicolon .  (136)
+
+	.  reduce 136
+
+
+state 224
+	print_funcs : T_Printchar T_LParen exp T_RParen T_Semicolon .  (138)
+
+	.  reduce 138
+
+
+state 225
+	print_funcs : T_Printstring T_LParen exp T_RParen T_Semicolon .  (135)
+
+	.  reduce 135
+
+
+state 226
+	print_funcs : T_Printint T_LParen exp T_RParen T_Semicolon .  (134)
+
+	.  reduce 134
+
+
+state 227
+	print_funcs : T_Printfloat T_LParen exp T_RParen T_Semicolon .  (137)
+
+	.  reduce 137
+
+
+state 228
+	fundec : T_Fun id typevars T_LParen . formals T_RParen block  (23)
+	fundec : T_Fun id typevars T_LParen . formals T_RParen T_Colon rtype block  (24)
+	formals : .  (108)
+
+	T_Id  shift 7
+	T_Var  shift 59
+	T_Function  shift 71
+	T_Bool  shift 72
+	T_PTChar  shift 73
+	T_PTString  shift 74
+	T_Int  shift 75
+	T_Float  shift 76
+	T_RParen  reduce 108
+
+	id  goto 91
+	typeapp  goto 78
+	tvar  goto 79
+	formals  goto 250
+	primtype  goto 80
+	formal  goto 140
+	ttype  goto 141
+
+
+state 229
+	typeapp : id T_Le types T_Ge .  (8)
+
+	.  reduce 8
+
+
+state 230
+	vardec : ttype id T_Set exp . T_Semicolon  (28)
+
+	T_Semicolon  shift 251
+	.  error
+
+
+state 231
+	actuals_rest : T_Comma exp . actuals_rest  (115)
+	actuals_rest : .  (114)
+
+	T_Comma  shift 199
+	T_RParen  reduce 114
+
+	actuals_rest  goto 252
+
+
+state 232
+	factor_rest : T_LParen actuals T_RParen factor_rest .  (72)
+
+	.  reduce 72
+
+
+state 233
+	factor_rest : T_LSq_Bracket exp T_RSq_Bracket factor_rest .  (74)
+
+	.  reduce 74
+
+
+state 234
+	typeapps_rest : T_Comma typeapp typeapps_rest .  (93)
+
+	.  reduce 93
+
+
+state 235
+	funproto : T_Fun id typevars . T_LParen formals T_RParen T_Semicolon  (10)
+	funproto : T_Fun id typevars . T_LParen formals T_RParen T_Colon rtype T_Semicolon  (11)
+
+	T_LParen  shift 253
+	.  error
+
+
+state 236
+	init : T_LParen . formals T_RParen block  (14)
+	formals : .  (108)
+
+	T_Id  shift 7
+	T_Var  shift 59
+	T_Function  shift 71
+	T_Bool  shift 72
+	T_PTChar  shift 73
+	T_PTString  shift 74
+	T_Int  shift 75
+	T_Float  shift 76
+	T_RParen  reduce 108
+
+	id  goto 91
+	typeapp  goto 78
+	tvar  goto 79
+	formals  goto 254
+	primtype  goto 80
+	formal  goto 140
+	ttype  goto 141
+
+
+state 237
+	classbody : T_LCur_Bracket init . bodydecs T_RCur_Bracket  (13)
+	bodydecs : .  (102)
+
+	T_Id  shift 7
+	T_Var  shift 59
+	T_Fun  shift 90
+	T_Constant  shift 255
+	T_Static  shift 256
+	T_Function  shift 71
+	T_Bool  shift 72
+	T_PTChar  shift 73
+	T_PTString  shift 74
+	T_Int  shift 75
+	T_Float  shift 76
+	T_RCur_Bracket  reduce 102
+
+	id  goto 91
+	typeapp  goto 78
+	tvar  goto 79
+	bodydecs  goto 257
+	bodydec  goto 258
+	constdec  goto 259
+	globaldec  goto 260
+	fielddec  goto 261
+	fundec  goto 262
+	primtype  goto 80
+	formal  goto 263
+	ttype  goto 141
+
+
+state 238
+	stm : T_If T_LParen exp T_RParen stm T_Else . stm  (42)
+
+	T_Char  shift 16
+	T_String  shift 17
+	T_Const  shift 18
+	T_Float_Const  shift 19
+	T_Id  shift 7
+	T_If  shift 20
+	T_While  shift 21
+	T_For  shift 22
+	T_Return  shift 23
+	T_Halt  shift 24
+	T_New  shift 25
+	T_Lambda  shift 26
+	T_Null  shift 27
+	T_True  shift 28
+	T_False  shift 29
+	T_Printline  shift 30
+	T_Printbool  shift 31
+	T_Printchar  shift 32
+	T_Printstring  shift 33
+	T_Printint  shift 34
+	T_Printfloat  shift 35
+	T_Sub  shift 36
+	T_Not  shift 37
+	T_Semicolon  shift 38
+	T_LParen  shift 39
+	T_LCur_Bracket  shift 40
+	.  error
+
+	stm  goto 264
+	id  goto 42
+	block  goto 43
+	literal  goto 44
+	exp  goto 45
+	print_funcs  goto 46
+	lhs  goto 47
+	disjunct  goto 48
+	conjunct  goto 49
+	simple  goto 50
+	term  goto 51
+	factor  goto 52
+	unop  goto 53
+	charliteral  goto 54
+	stringliteral  goto 55
+	intliteral  goto 56
+	floatliteral  goto 57
+
+
+state 239
+	stm : T_For T_LParen vardec exp T_Semicolon exp . T_RParen stm  (44)
+
+	T_RParen  shift 265
+	.  error
+
+
+state 240
+	ttype : T_Function T_LParen T_LParen types T_RParen . T_Arrow rtype T_RParen  (32)
+
+	T_Arrow  shift 266
+	.  error
+
+
+state 241
+	factor : T_New id T_Le types T_Ge T_LParen . actuals T_RParen factor_rest  (65)
+	actuals : .  (112)
+
+	T_Char  shift 16
+	T_String  shift 17
+	T_Const  shift 18
+	T_Float_Const  shift 19
+	T_Id  shift 7
+	T_New  shift 25
+	T_Lambda  shift 26
+	T_Null  shift 27
+	T_True  shift 28
+	T_False  shift 29
+	T_Sub  shift 36
+	T_Not  shift 37
+	T_LParen  shift 39
+	T_RParen  reduce 112
+
+	id  goto 42
+	literal  goto 44
+	exp  goto 156
+	lhs  goto 47
+	disjunct  goto 48
+	conjunct  goto 49
+	simple  goto 50
+	term  goto 51
+	factor  goto 52
+	unop  goto 53
+	actuals  goto 267
+	charliteral  goto 54
+	stringliteral  goto 55
+	intliteral  goto 56
+	floatliteral  goto 57
+
+
+state 242
+	ttype : ttype . T_LSq_Bracket T_RSq_Bracket  (31)
+	types_rest : T_Comma ttype . types_rest  (101)
+	types_rest : .  (100)
+
+	T_Comma  shift 216
+	T_LSq_Bracket  shift 151
+	T_Ge  reduce 100
+	T_RParen  reduce 100
+
+	types_rest  goto 268
+
+
+state 243
+	factor : T_New id T_LParen actuals T_RParen factor_rest .  (64)
+
+	.  reduce 64
+
+
+state 244
+	factor : T_New ttype T_LSq_Bracket exp T_RSq_Bracket factor_rest .  (66)
+
+	.  reduce 66
+
+
+state 245
+	rtype : T_Void .  (39)
+
+	.  reduce 39
+
+
+state 246
+	factor : T_Lambda T_LParen formals T_RParen T_Colon rtype . block factor_rest  (68)
+
+	T_LCur_Bracket  shift 40
+	.  error
+
+	block  goto 269
+
+
+state 247
+	ttype : ttype . T_LSq_Bracket T_RSq_Bracket  (31)
+	rtype : ttype .  (38)
+
+	T_LSq_Bracket  shift 151
+	T_Semicolon  reduce 38
+	T_RParen  reduce 38
+	T_LCur_Bracket  reduce 38
+
+
+state 248
+	factor : T_Lambda T_LParen formals T_RParen block factor_rest .  (67)
+
+	.  reduce 67
+
+
+state 249
+	formals_rest : T_Comma formal formals_rest .  (111)
+
+	.  reduce 111
+
+
+state 250
+	fundec : T_Fun id typevars T_LParen formals . T_RParen block  (23)
+	fundec : T_Fun id typevars T_LParen formals . T_RParen T_Colon rtype block  (24)
+
+	T_RParen  shift 270
+	.  error
+
+
+state 251
+	vardec : ttype id T_Set exp T_Semicolon .  (28)
+
+	.  reduce 28
+
+
+state 252
+	actuals_rest : T_Comma exp actuals_rest .  (115)
+
+	.  reduce 115
+
+
+state 253
+	funproto : T_Fun id typevars T_LParen . formals T_RParen T_Semicolon  (10)
+	funproto : T_Fun id typevars T_LParen . formals T_RParen T_Colon rtype T_Semicolon  (11)
+	formals : .  (108)
+
+	T_Id  shift 7
+	T_Var  shift 59
+	T_Function  shift 71
+	T_Bool  shift 72
+	T_PTChar  shift 73
+	T_PTString  shift 74
+	T_Int  shift 75
+	T_Float  shift 76
+	T_RParen  reduce 108
+
+	id  goto 91
+	typeapp  goto 78
+	tvar  goto 79
+	formals  goto 271
+	primtype  goto 80
+	formal  goto 140
+	ttype  goto 141
+
+
+state 254
+	init : T_LParen formals . T_RParen block  (14)
+
+	T_RParen  shift 272
+	.  error
+
+
+state 255
+	constdec : T_Constant . primtype id T_Set literal T_Semicolon  (19)
+
+	T_Bool  shift 72
+	T_PTChar  shift 73
+	T_PTString  shift 74
+	T_Int  shift 75
+	T_Float  shift 76
+	.  error
+
+	primtype  goto 273
+
+
+state 256
+	globaldec : T_Static . primtype id T_Set literal T_Semicolon  (20)
+
+	T_Bool  shift 72
+	T_PTChar  shift 73
+	T_PTString  shift 74
+	T_Int  shift 75
+	T_Float  shift 76
+	.  error
+
+	primtype  goto 274
+
+
+state 257
+	classbody : T_LCur_Bracket init bodydecs . T_RCur_Bracket  (13)
+
+	T_RCur_Bracket  shift 275
+	.  error
+
+
+state 258
+	bodydecs : bodydec . bodydecs  (103)
+	bodydecs : .  (102)
+
+	T_Id  shift 7
+	T_Var  shift 59
+	T_Fun  shift 90
+	T_Constant  shift 255
+	T_Static  shift 256
+	T_Function  shift 71
+	T_Bool  shift 72
+	T_PTChar  shift 73
+	T_PTString  shift 74
+	T_Int  shift 75
+	T_Float  shift 76
+	T_RCur_Bracket  reduce 102
+
+	id  goto 91
+	typeapp  goto 78
+	tvar  goto 79
+	bodydecs  goto 276
+	bodydec  goto 258
+	constdec  goto 259
+	globaldec  goto 260
+	fielddec  goto 261
+	fundec  goto 262
+	primtype  goto 80
+	formal  goto 263
+	ttype  goto 141
+
+
+state 259
+	bodydec : constdec .  (15)
+
+	.  reduce 15
+
+
+state 260
+	bodydec : globaldec .  (16)
+
+	.  reduce 16
+
+
+state 261
+	bodydec : fielddec .  (17)
+
+	.  reduce 17
+
+
+state 262
+	bodydec : fundec .  (18)
+
+	.  reduce 18
+
+
+state 263
+	fielddec : formal . T_Semicolon  (21)
+
+	T_Semicolon  shift 277
+	.  error
+
+
+state 264
+	stm : T_If T_LParen exp T_RParen stm T_Else stm .  (42)
+
+	.  reduce 42
+
+
+state 265
+	stm : T_For T_LParen vardec exp T_Semicolon exp T_RParen . stm  (44)
+
+	T_Char  shift 16
+	T_String  shift 17
+	T_Const  shift 18
+	T_Float_Const  shift 19
+	T_Id  shift 7
+	T_If  shift 20
+	T_While  shift 21
+	T_For  shift 22
+	T_Return  shift 23
+	T_Halt  shift 24
+	T_New  shift 25
+	T_Lambda  shift 26
+	T_Null  shift 27
+	T_True  shift 28
+	T_False  shift 29
+	T_Printline  shift 30
+	T_Printbool  shift 31
+	T_Printchar  shift 32
+	T_Printstring  shift 33
+	T_Printint  shift 34
+	T_Printfloat  shift 35
+	T_Sub  shift 36
+	T_Not  shift 37
+	T_Semicolon  shift 38
+	T_LParen  shift 39
+	T_LCur_Bracket  shift 40
+	.  error
+
+	stm  goto 278
+	id  goto 42
+	block  goto 43
+	literal  goto 44
+	exp  goto 45
+	print_funcs  goto 46
+	lhs  goto 47
+	disjunct  goto 48
+	conjunct  goto 49
+	simple  goto 50
+	term  goto 51
+	factor  goto 52
+	unop  goto 53
+	charliteral  goto 54
+	stringliteral  goto 55
+	intliteral  goto 56
+	floatliteral  goto 57
+
+
+state 266
+	ttype : T_Function T_LParen T_LParen types T_RParen T_Arrow . rtype T_RParen  (32)
+
+	T_Id  shift 7
+	T_Var  shift 59
+	T_Function  shift 71
+	T_Bool  shift 72
+	T_PTChar  shift 73
+	T_PTString  shift 74
+	T_Int  shift 75
+	T_Float  shift 76
+	T_Void  shift 245
+	.  error
+
+	id  goto 91
+	typeapp  goto 78
+	tvar  goto 79
+	rtype  goto 279
+	primtype  goto 80
+	ttype  goto 247
+
+
+state 267
+	factor : T_New id T_Le types T_Ge T_LParen actuals . T_RParen factor_rest  (65)
+
+	T_RParen  shift 280
+	.  error
+
+
+state 268
+	types_rest : T_Comma ttype types_rest .  (101)
+
+	.  reduce 101
+
+
+state 269
+	factor : T_Lambda T_LParen formals T_RParen T_Colon rtype block . factor_rest  (68)
+	factor_rest : .  (71)
+
+	T_LParen  shift 98
+	T_LSq_Bracket  shift 99
+	T_Dot  shift 100
+	T_Set  reduce 71
+	T_Or  reduce 71
+	T_And  reduce 71
+	T_Eq  reduce 71
+	T_Neq  reduce 71
+	T_Le  reduce 71
+	T_Leq  reduce 71
+	T_Ge  reduce 71
+	T_Geq  reduce 71
+	T_Add  reduce 71
+	T_Sub  reduce 71
+	T_Mult  reduce 71
+	T_Div  reduce 71
+	T_Semicolon  reduce 71
+	T_Comma  reduce 71
+	T_RParen  reduce 71
+	T_RSq_Bracket  reduce 71
+
+	factor_rest  goto 281
+
+
+state 270
+	fundec : T_Fun id typevars T_LParen formals T_RParen . block  (23)
+	fundec : T_Fun id typevars T_LParen formals T_RParen . T_Colon rtype block  (24)
+
+	T_Colon  shift 282
+	T_LCur_Bracket  shift 40
+	.  error
+
+	block  goto 283
+
+
+state 271
+	funproto : T_Fun id typevars T_LParen formals . T_RParen T_Semicolon  (10)
+	funproto : T_Fun id typevars T_LParen formals . T_RParen T_Colon rtype T_Semicolon  (11)
+
+	T_RParen  shift 284
+	.  error
+
+
+state 272
+	init : T_LParen formals T_RParen . block  (14)
+
+	T_LCur_Bracket  shift 40
+	.  error
+
+	block  goto 285
+
+
+state 273
+	constdec : T_Constant primtype . id T_Set literal T_Semicolon  (19)
+
+	T_Id  shift 7
+	.  error
+
+	id  goto 286
+
+
+state 274
+	globaldec : T_Static primtype . id T_Set literal T_Semicolon  (20)
+
+	T_Id  shift 7
+	.  error
+
+	id  goto 287
+
+
+state 275
+	classbody : T_LCur_Bracket init bodydecs T_RCur_Bracket .  (13)
+
+	.  reduce 13
+
+
+state 276
+	bodydecs : bodydec bodydecs .  (103)
+
+	.  reduce 103
+
+
+state 277
+	fielddec : formal T_Semicolon .  (21)
+
+	.  reduce 21
+
+
+state 278
+	stm : T_For T_LParen vardec exp T_Semicolon exp T_RParen stm .  (44)
+
+	.  reduce 44
+
+
+state 279
+	ttype : T_Function T_LParen T_LParen types T_RParen T_Arrow rtype . T_RParen  (32)
+
+	T_RParen  shift 288
+	.  error
+
+
+state 280
+	factor : T_New id T_Le types T_Ge T_LParen actuals T_RParen . factor_rest  (65)
+	factor_rest : .  (71)
+
+	T_LParen  shift 98
+	T_LSq_Bracket  shift 99
+	T_Dot  shift 100
+	T_Set  reduce 71
+	T_Or  reduce 71
+	T_And  reduce 71
+	T_Eq  reduce 71
+	T_Neq  reduce 71
+	T_Le  reduce 71
+	T_Leq  reduce 71
+	T_Ge  reduce 71
+	T_Geq  reduce 71
+	T_Add  reduce 71
+	T_Sub  reduce 71
+	T_Mult  reduce 71
+	T_Div  reduce 71
+	T_Semicolon  reduce 71
+	T_Comma  reduce 71
+	T_RParen  reduce 71
+	T_RSq_Bracket  reduce 71
+
+	factor_rest  goto 289
+
+
+state 281
+	factor : T_Lambda T_LParen formals T_RParen T_Colon rtype block factor_rest .  (68)
+
+	.  reduce 68
+
+
+state 282
+	fundec : T_Fun id typevars T_LParen formals T_RParen T_Colon . rtype block  (24)
+
+	T_Id  shift 7
+	T_Var  shift 59
+	T_Function  shift 71
+	T_Bool  shift 72
+	T_PTChar  shift 73
+	T_PTString  shift 74
+	T_Int  shift 75
+	T_Float  shift 76
+	T_Void  shift 245
+	.  error
+
+	id  goto 91
+	typeapp  goto 78
+	tvar  goto 79
+	rtype  goto 290
+	primtype  goto 80
+	ttype  goto 247
+
+
+state 283
+	fundec : T_Fun id typevars T_LParen formals T_RParen block .  (23)
+
+	.  reduce 23
+
+
+state 284
+	funproto : T_Fun id typevars T_LParen formals T_RParen . T_Semicolon  (10)
+	funproto : T_Fun id typevars T_LParen formals T_RParen . T_Colon rtype T_Semicolon  (11)
+
+	T_Semicolon  shift 291
+	T_Colon  shift 292
+	.  error
+
+
+state 285
+	init : T_LParen formals T_RParen block .  (14)
+
+	.  reduce 14
+
+
+state 286
+	constdec : T_Constant primtype id . T_Set literal T_Semicolon  (19)
+
+	T_Set  shift 293
+	.  error
+
+
+state 287
+	globaldec : T_Static primtype id . T_Set literal T_Semicolon  (20)
+
+	T_Set  shift 294
+	.  error
+
+
+state 288
+	ttype : T_Function T_LParen T_LParen types T_RParen T_Arrow rtype T_RParen .  (32)
+
+	.  reduce 32
+
+
+state 289
+	factor : T_New id T_Le types T_Ge T_LParen actuals T_RParen factor_rest .  (65)
+
+	.  reduce 65
+
+
+state 290
+	fundec : T_Fun id typevars T_LParen formals T_RParen T_Colon rtype . block  (24)
+
+	T_LCur_Bracket  shift 40
+	.  error
+
+	block  goto 295
+
+
+state 291
+	funproto : T_Fun id typevars T_LParen formals T_RParen T_Semicolon .  (10)
+
+	.  reduce 10
+
+
+state 292
+	funproto : T_Fun id typevars T_LParen formals T_RParen T_Colon . rtype T_Semicolon  (11)
+
+	T_Id  shift 7
+	T_Var  shift 59
+	T_Function  shift 71
+	T_Bool  shift 72
+	T_PTChar  shift 73
+	T_PTString  shift 74
+	T_Int  shift 75
+	T_Float  shift 76
+	T_Void  shift 245
+	.  error
+
+	id  goto 91
+	typeapp  goto 78
+	tvar  goto 79
+	rtype  goto 296
+	primtype  goto 80
+	ttype  goto 247
+
+
+state 293
+	constdec : T_Constant primtype id T_Set . literal T_Semicolon  (19)
+
+	T_Char  shift 16
+	T_String  shift 17
+	T_Const  shift 18
+	T_Float_Const  shift 19
+	T_Null  shift 27
+	T_True  shift 28
+	T_False  shift 29
+	.  error
+
+	literal  goto 297
+	charliteral  goto 54
+	stringliteral  goto 55
+	intliteral  goto 56
+	floatliteral  goto 57
+
+
+state 294
+	globaldec : T_Static primtype id T_Set . literal T_Semicolon  (20)
+
+	T_Char  shift 16
+	T_String  shift 17
+	T_Const  shift 18
+	T_Float_Const  shift 19
+	T_Null  shift 27
+	T_True  shift 28
+	T_False  shift 29
+	.  error
+
+	literal  goto 298
+	charliteral  goto 54
+	stringliteral  goto 55
+	intliteral  goto 56
+	floatliteral  goto 57
+
+
+state 295
+	fundec : T_Fun id typevars T_LParen formals T_RParen T_Colon rtype block .  (24)
+
+	.  reduce 24
+
+
+state 296
+	funproto : T_Fun id typevars T_LParen formals T_RParen T_Colon rtype . T_Semicolon  (11)
+
+	T_Semicolon  shift 299
+	.  error
+
+
+state 297
+	constdec : T_Constant primtype id T_Set literal . T_Semicolon  (19)
+
+	T_Semicolon  shift 300
+	.  error
+
+
+state 298
+	globaldec : T_Static primtype id T_Set literal . T_Semicolon  (20)
+
+	T_Semicolon  shift 301
+	.  error
+
+
+state 299
+	funproto : T_Fun id typevars T_LParen formals T_RParen T_Colon rtype T_Semicolon .  (11)
+
+	.  reduce 11
+
+
+state 300
+	constdec : T_Constant primtype id T_Set literal T_Semicolon .  (19)
+
+	.  reduce 19
+
+
+state 301
+	globaldec : T_Static primtype id T_Set literal T_Semicolon .  (20)
+
+	.  reduce 20
+
+
+State 40 contains 1 shift/reduce conflict.
+State 95 contains 1 shift/reduce conflict.
+
+
+66 terminals, 62 nonterminals
+140 grammar rules, 302 states

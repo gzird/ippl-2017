@@ -1,0 +1,66 @@
+
+** Conflict (shift/reduce) in state 264.
+** Token involved: T_Id
+** This state is reached from program after reading:
+
+protodecs classdecs T_LCur_Bracket localdec 
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+protodecs classdecs stm T_Eof 
+                    block 
+                    (?)
+
+** In state 264, looking ahead at T_Id, shifting is permitted
+** because of the following sub-derivation:
+
+T_LCur_Bracket localdecs stms T_RCur_Bracket 
+               localdec localdecs 
+                        localdec localdecs 
+                        vardec 
+                        ttype id T_Set exp T_Semicolon 
+                        typeapp 
+                        id 
+                        . T_Id 
+
+** In state 264, looking ahead at T_Id, reducing production
+** localdecs -> 
+** is permitted because of the following sub-derivation:
+
+T_LCur_Bracket localdecs stms T_RCur_Bracket // lookahead token appears because stms can begin with T_Id
+               localdec localdecs // lookahead token is inherited
+                        . 
+
+** Conflict (shift/reduce) in state 81.
+** Token involved: T_Id
+** This state is reached from program after reading:
+
+protodecs classdecs T_LCur_Bracket 
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+protodecs classdecs stm T_Eof 
+                    block 
+                    (?)
+
+** In state 81, looking ahead at T_Id, shifting is permitted
+** because of the following sub-derivation:
+
+T_LCur_Bracket localdecs stms T_RCur_Bracket 
+               localdec localdecs 
+               vardec 
+               ttype id T_Set exp T_Semicolon 
+               typeapp 
+               id 
+               . T_Id 
+
+** In state 81, looking ahead at T_Id, reducing production
+** localdecs -> 
+** is permitted because of the following sub-derivation:
+
+T_LCur_Bracket localdecs stms T_RCur_Bracket // lookahead token appears because stms can begin with T_Id
+               . 
